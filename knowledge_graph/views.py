@@ -28,6 +28,7 @@ def chart(request):
     today = datetime.datetime.today().date()
     dataList = dateRange(today)
     print(dataList)
+    # 0.2遍历获取日期对应项目数量
 
 
     return JsonResponse({'result':'success','projects':12,'triples':100,'concepts':1200})
