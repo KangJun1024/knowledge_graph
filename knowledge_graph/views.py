@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 
 from knowledge_graph import models
-import time
+from project import models as project
 import datetime
 
 
@@ -15,14 +15,20 @@ def login(request):
         return JsonResponse({'result':'success'})
 
 def statistics(request):
+    #项目数量
+    count = project.Project.objects.count()
+    print(count)
+    #三元组数 todo
+    #概念数 todo
 
-    return JsonResponse({'result':'success','projects':12,'triples':100,'concepts':1200})
+    return JsonResponse({'result':'success','projects':count,'triples':100,'concepts':1200})
 
 def chart(request):
     # 0.1获取时间日期
     today = datetime.datetime.today().date()
     dataList = dateRange(today)
     print(dataList)
+
 
     return JsonResponse({'result':'success','projects':12,'triples':100,'concepts':1200})
 
