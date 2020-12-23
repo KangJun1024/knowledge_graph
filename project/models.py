@@ -1,4 +1,5 @@
 from django.db import models
+from utils import time_utils
 
 
 class Project(models.Model):
@@ -13,3 +14,23 @@ class Project(models.Model):
     update_time = models.DateTimeField(auto_now=True)  # 用于表示更新时间
     create_user = models.CharField(max_length=50)
     update_user = models.CharField(max_length=50)
+
+    def to_dict(self):
+        columns = self._meta.fields
+        data = {}
+        for column in columns:
+            column_name = column.name
+            column_typ = column.get_internal_type()
+            # 所有使用choices的字段，返回当前值的描述
+            if column.choices:
+                method = 'get_{}_display'.format(column_name)
+                data['{}_desc'.format(column_name)] = getattr(self, method)()
+            value = getattr(self, column_name)
+            # 统一格式化时间输出
+            if column_typ == 'DateTimeField' and value:
+                value = time_utils.datetime2str_by_format(value, '%Y-%m-%d %H:%M:%S')
+            elif column_typ == 'ForeignKey' and value:
+                value = value.id
+                column_name = '{}_id'.format(column_name)
+            data[column_name] = value
+        return data

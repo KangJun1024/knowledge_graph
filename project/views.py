@@ -1,10 +1,11 @@
 from django.http import JsonResponse, HttpRequest
 from knowledge_graph import settings
-from project import models
 from .models import Project
-from base import errors
+from utils import time_utils
+from django.db.models import Q
 import os
 import simplejson
+
 
 
 # 上传文件
@@ -12,7 +13,6 @@ def upload(request):
     if request.method == 'POST':
         # 获取文件上传到服务器
         files = request.FILES.getlist('file',None)
-        print(files)
         if not files:
             return JsonResponse({'result':'failure'})
         destination = open(os.path.join(settings.BASE_DIR,files[0].name), 'wb+') # 项目目录下
@@ -31,7 +31,7 @@ def create(request:HttpRequest):
     if request.method == 'POST':
         payload = simplejson.loads(request.body)
         # 校验项目名称
-        name = payload['project_name']
+        name = payload['projectName']
         project = Project()
         project.project_name = payload['project_name']
         project.project_code = payload['project_code']
@@ -41,6 +41,7 @@ def create(request:HttpRequest):
         project.project_fieldcode = payload['project_fieldcode']
         project.project_fieldname = payload['project_fieldname']
         project.create_user = payload['create_user']
+        project.create_time = time_utils.now()
         if Project.objects.filter(project_name=name).exists():
             return JsonResponse({'result': 'failure','message':'项目名称重复'})
         project.save()
@@ -51,12 +52,21 @@ def create(request:HttpRequest):
 
 # 项目列表
 def list(request):
-    if request.method == 'POST':
-
-
-        return JsonResponse({'result':'success'})
-    else:
-        return JsonResponse({'result':'failure'})
+    # 获取参数
+    projectFieldcode = request.GET.get("projectFieldcode")
+    projectName = request.GET.get("projectName")
+    base_query = Project.objects
+    base_query =  base_query.filter(Q(project_name__icontains=projectName) &
+                      Q(project_fieldcode=projectFieldcode))
+    total = base_query.count()
+    objs = base_query.all()
+    objs = [i.to_dict() for i in base_query.all()]
+    data = {
+        'result':'success',
+        'total': total,
+        'data_list': objs
+    }
+    return JsonResponse(data)
 
 # 项目删除
 def delete(request):
