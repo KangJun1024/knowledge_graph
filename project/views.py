@@ -57,31 +57,39 @@ def list(request):
     projectName = request.GET.get("projectName")
     base_query = Project.objects
     base_query =  base_query.filter(Q(project_name__icontains=projectName) &
-                      Q(project_fieldcode=projectFieldcode))
+                      Q(project_fieldcode__icontains=projectFieldcode) & ~Q(project_status=0))
     total = base_query.count()
-    objs = base_query.all()
     objs = [i.to_dict() for i in base_query.all()]
     data = {
         'result':'success',
         'total': total,
-        'data_list': objs
+        'data': objs
     }
     return JsonResponse(data)
 
 # 项目删除
 def delete(request):
-    if request.method == 'POST':
+    # 获取参数
+    id = request.GET.get("id")
+    update_user = request.GET.get("update_user")
+    base_query = Project.objects
+    obj = base_query.filter(id=id).first()
+    if not obj:
+        return JsonResponse({'result': 'failure', 'message': '项目不存在'})
+    obj.project_status = 0
+    obj.update_time = time_utils.now()
+    obj.update_user = update_user
+    obj.save()
+    return JsonResponse({'result': 'success'})
 
-
-        return JsonResponse({'result':'success'})
-    else:
-        return JsonResponse({'result':'failure'})
 
 # 项目详情
 def detail(request):
-    if request.method == 'POST':
-
-
-        return JsonResponse({'result':'success'})
-    else:
-        return JsonResponse({'result':'failure'})
+    # 获取参数
+    id = request.GET.get("id")
+    base_query = Project.objects
+    obj = base_query.filter(id=id).first()
+    if not obj:
+        return JsonResponse({'result': 'failure', 'message': '无项目'})
+    data = obj.to_dict()
+    return JsonResponse({'result': 'success', 'data': data})

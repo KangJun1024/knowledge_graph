@@ -2,6 +2,7 @@ from django.http import JsonResponse
 
 from knowledge_graph import models
 from project import models as project
+from utils import time_utils
 import datetime
 
 
@@ -28,7 +29,18 @@ def chart(request):
     today = datetime.datetime.today().date()
     dataList = dateRange(today)
     print(dataList)
-    # 0.2遍历获取日期对应项目数量
+    dict = {}
+    # 0.2遍历获取日期对应项目数量  获取区间查询
+    for i in dataList:
+        print(i)
+        # 获取项目数量范围查询
+        date = time_utils.str2date(i)
+        datatime_start = time_utils.date2datetime(date)
+        datatime_end = time_utils.delta_day(datatime_start,1)
+        print(datatime_start)
+        print(datatime_end)
+        project.Project.objects.filter()
+
 
 
     return JsonResponse({'result':'success','projects':12,'triples':100,'concepts':1200})
@@ -47,12 +59,12 @@ def dateRange(beginDate):
     aWeekAgo = yes_time - aWeekDelta
     dates = []
     i = 0
-    begin = aWeekAgo.strftime("%Y.%m.%d")
-    dt = datetime.datetime.strptime(begin, "%Y.%m.%d")
+    begin = aWeekAgo.strftime("%Y-%m-%d")
+    dt = datetime.datetime.strptime(begin, "%Y-%m-%d")
     date = begin[:]
     while i < 7:
         dates.append(date)
         dt = dt + datetime.timedelta(1)
-        date = dt.strftime("%Y.%m.%d")
+        date = dt.strftime("%Y-%m-%d")
         i += 1
     return dates

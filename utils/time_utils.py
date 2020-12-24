@@ -54,7 +54,7 @@ def datetime2date_range(dt):
 
 
 def now():
-    return datetime.utcnow().replace(tzinfo=utc_tz).astimezone(loc_tz)
+    return datetime.now()
 
 
 def today():
@@ -171,3 +171,10 @@ def get_all_week(dt_start, dt_end):
             week = '{}-{}'.format(dt_end.year, i)
             week_list.append(week)
     return week_list
+
+def delta_day(datatime_start,delta=0):
+    """
+    :param delta:   偏移量
+    :return:        0今天, 1昨天, 2前天, -1明天 ...
+    """
+    return (datatime_start + timedelta(days=delta)).strftime('%Y-%m-%d %H:%M:%S')
