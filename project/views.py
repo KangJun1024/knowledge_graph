@@ -31,7 +31,7 @@ def create(request:HttpRequest):
     if request.method == 'POST':
         payload = simplejson.loads(request.body)
         # 校验项目名称
-        name = payload['projectName']
+        name = payload['project_name']
         project = Project()
         project.project_name = payload['project_name']
         project.project_code = payload['project_code']
