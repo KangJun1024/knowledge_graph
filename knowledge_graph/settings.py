@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+import os
+import platform
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -161,7 +163,7 @@ DATABASES = {
     {
         'ENGINE': 'django.db.backends.mysql',    # 数据库引擎
         'NAME': 'new_ihp_consult', # 数据库名称
-        'HOST': '192.167.180.4', # 数据库地址，本机 ip 地址 127.0.0.1 120.221.160.3
+        'HOST': '120.221.160.3', # 数据库地址，本机 ip 地址 127.0.0.1 120.221.160.3
         'PORT': 33061, # 端口
         'USER': 'developer',  # 数据库用户名
         'PASSWORD': 'w&VMZ2CXJ$@*kAz^', # 数据库密码
@@ -169,3 +171,52 @@ DATABASES = {
 }
 
 APPEND_SLASH=False
+
+log_class = 'cloghandler.ConcurrentRotatingFileHandler'
+if str(platform.system()) == "Windows":
+    log_class = 'concurrent_log_handler.ConcurrentRotatingFileHandler'
+
+# 当logs文件夹不存在时则创建
+file_path = "./logs"
+if not os.path.exists(file_path):
+    os.mkdir(file_path)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '%(asctime)s %(levelname)-8s %(message)s'
+        },
+        'detail': {
+            'format': '%(asctime)s %(levelname)-8s %(pathname)s[line:%(lineno)d] %(message)s'
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard',
+        },
+        'file': {
+            'level': 'INFO',
+            'class': log_class,
+            'filename': 'logs/log.log',
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 20,
+            'formatter': 'detail',
+        }
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'eventmgt': {
+            'handlers': ['console', 'file'],
+            'level': 'WARN',
+            'propagate': True,
+        }
+    },
+}

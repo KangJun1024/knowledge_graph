@@ -11,6 +11,9 @@ import simplejson
 # 上传文件
 def upload(request):
     if request.method == 'POST':
+        # 获取项目名称
+        project_name = request.POST.get("project_name")
+        print(project_name)
         # 获取文件上传到服务器
         files = request.FILES.getlist('file',None)
         if not files:
@@ -28,6 +31,7 @@ def upload(request):
 
 # 项目新增
 def create(request:HttpRequest):
+    print(request.body)
     if request.method == 'POST':
         payload = simplejson.loads(request.body)
         # 校验项目名称
@@ -53,11 +57,12 @@ def create(request:HttpRequest):
 # 项目列表
 def list(request):
     # 获取参数
-    projectFieldcode = request.GET.get("projectFieldcode")
-    projectName = request.GET.get("projectName")
+    projectFieldcode = request.GET.get("project_fieldcode")
+    projectName = request.GET.get("project_name")
     base_query = Project.objects
-    base_query =  base_query.filter(Q(project_name__icontains=projectName) &
-                      Q(project_fieldcode__icontains=projectFieldcode) & ~Q(project_status=0))
+    if projectFieldcode is not None and projectName is not None:
+        base_query =  base_query.filter(Q(project_name__icontains=projectName) &
+                          Q(project_fieldcode__icontains=projectFieldcode) & ~Q(project_status=0))
     total = base_query.count()
     objs = [i.to_dict() for i in base_query.all()]
     data = {
