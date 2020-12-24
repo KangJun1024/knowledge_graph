@@ -172,51 +172,62 @@ DATABASES = {
 
 APPEND_SLASH=False
 
-log_class = 'cloghandler.ConcurrentRotatingFileHandler'
-if str(platform.system()) == "Windows":
-    log_class = 'concurrent_log_handler.ConcurrentRotatingFileHandler'
-
-# 当logs文件夹不存在时则创建
-file_path = "./logs"
-if not os.path.exists(file_path):
-    os.mkdir(file_path)
+LOG_DIR = os.path.join(BASE_DIR, 'var/log')
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR)
 
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'standard': {
-            'format': '%(asctime)s %(levelname)-8s %(message)s'
+        'info': {
+            'format': '%(asctime)s %(levelname)s %(message)s',
         },
-        'detail': {
-            'format': '%(asctime)s %(levelname)-8s %(pathname)s[line:%(lineno)d] %(message)s'
+        'request': {
+            'format': '%(asctime)s %(levelname)s %(message)s',
         },
+        'error': {
+            'format': '%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s'
+        }
     },
     'handlers': {
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'standard',
+        'info': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(LOG_DIR, 'info.log'),
+            'when': 'D',
+            'interval': 1,
+            'backupCount': 7,
+            'formatter': 'info',
         },
-        'file': {
-            'level': 'INFO',
-            'class': log_class,
-            'filename': 'logs/log.log',
-            'maxBytes': 1024 * 1024 * 5,  # 5 MB
-            'backupCount': 20,
-            'formatter': 'detail',
+        'request': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(LOG_DIR, 'access.log'),
+            'when': 'D',
+            'interval': 1,
+            'backupCount': 7,
+            'formatter': 'request',
+        },
+        'error': {
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(LOG_DIR, 'error.log'),
+            'when': 'D',
+            'interval': 1,
+            'backupCount': 7,
+            'formatter': 'error',
         }
     },
     'loggers': {
-        'django': {
-            'handlers': ['console', 'file'],
+        'gunicorn': {
+            'handlers': ['request'],
             'level': 'INFO',
-            'propagate': True,
         },
-        'eventmgt': {
-            'handlers': ['console', 'file'],
-            'level': 'WARN',
-            'propagate': True,
+        'info': {
+            'handlers': ['info'],
+            'level': 'INFO',
+        },
+        'error': {
+            'handlers': ['error'],
+            'level': 'ERROR',
         }
     },
 }
