@@ -1,7 +1,7 @@
 from django.http import JsonResponse, HttpRequest
 from knowledge_graph import settings
 from .models import Project
-from utils import time_utils
+from utils import time_utils,common_utils
 from django.db.models import Q
 import os
 import simplejson
@@ -44,8 +44,10 @@ def create(request:HttpRequest):
     if request.method == 'POST':
         payload = simplejson.loads(request.body)
         access_logger.info(payload)
-        # 校验项目名称
+        # 校验项目名称 + 组织编码
         name = payload['project_name']
+        code = payload['project_code']
+        id = common_utils.generate_record_id('PJ')
         project = Project()
         project.project_name = payload['project_name']
         project.project_code = payload['project_code']
@@ -55,11 +57,14 @@ def create(request:HttpRequest):
         project.project_fieldcode = payload['project_fieldcode']
         project.project_fieldname = payload['project_fieldname']
         project.create_user = payload['create_user']
+        project.project_id = id
+        project.project_concepts = 0
+        project.project_triples = 0
         project.create_time = time_utils.now()
-        if Project.objects.filter(project_name=name).exists():
+        if Project.objects.filter(Q(project_name__icontains=name) & Q(project_code__icontains=code)).exists():
             return JsonResponse({'result': 'failure','message':'项目名称重复'})
         project.save()
-        return JsonResponse({'result': 'success'})
+        return JsonResponse({'result': 'success','data':id})
     else:
         return JsonResponse({'result': 'failure'})
 
