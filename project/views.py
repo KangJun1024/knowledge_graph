@@ -15,7 +15,6 @@ access_logger = logging.getLogger('gunicorn')
 # 上传文件
 def upload(request):
     if request.method == 'POST':
-
         try:
             # 获取项目名称
             project_name = request.POST.get("project_name")
@@ -42,31 +41,32 @@ def upload(request):
 def create(request:HttpRequest):
     print(request.body)
     if request.method == 'POST':
-        payload = simplejson.loads(request.body)
-        access_logger.info(payload)
-        # 校验项目名称 + 组织编码
-        name = payload['project_name']
-        code = payload['project_code']
-        id = common_utils.generate_record_id('PJ')
-        project = Project()
-        project.project_name = payload['project_name']
-        project.project_code = payload['project_code']
-        project.project_status = 1
-        project.project_introduction = payload['project_introduction']
-        project.project_photo = payload['project_photo']
-        project.project_fieldcode = payload['project_fieldcode']
-        project.project_fieldname = payload['project_fieldname']
-        project.create_user = payload['create_user']
-        project.project_id = id
-        project.project_concepts = 0
-        project.project_triples = 0
-        project.create_time = time_utils.now()
-        if Project.objects.filter(Q(project_name__icontains=name) & Q(project_code__icontains=code)).exists():
-            return JsonResponse({'result': 'failure','message':'项目名称重复'})
-        project.save()
-        return JsonResponse({'result': 'success','data':id})
-    else:
-        return JsonResponse({'result': 'failure'})
+        try:
+            payload = simplejson.loads(request.body)
+            access_logger.info(payload)
+            # 校验项目名称 + 组织编码
+            name = payload['project_name']
+            code = payload['project_code']
+            id = common_utils.generate_record_id('PJ')
+            project = Project()
+            project.project_name = payload['project_name']
+            project.project_code = payload['project_code']
+            project.project_status = 1
+            project.project_introduction = payload['project_introduction']
+            project.project_photo = payload['project_photo']
+            project.project_fieldcode = payload['project_fieldcode']
+            project.project_fieldname = payload['project_fieldname']
+            project.create_user = payload['create_user']
+            project.project_id = id
+            project.project_concepts = 0
+            project.project_triples = 0
+            project.create_time = time_utils.now()
+            if Project.objects.filter(Q(project_name__icontains=name) & Q(project_code__icontains=code)).exists():
+                return JsonResponse({'result': 'failure','message':'项目名称重复'})
+            project.save()
+            return JsonResponse({'result': 'success','data':id})
+        except Exception as e:
+            return JsonResponse({'result': 'failure'})
 
 
 # 项目列表
@@ -115,10 +115,10 @@ def detail(request):
     return JsonResponse({'result': 'success', 'data': data})
 
 #  通过项目名称获取项目并修改项目状态
-def updateStatus(name,status):
+def updateStatus(id,status):
     # 获取参数
     base_query = Project.objects
-    obj = base_query.filter(project_name=name).first()
+    obj = base_query.filter(project_id=id).first()
     if not obj:
         return JsonResponse({'result': 'failure', 'message': '项目不存在'})
     obj.project_status = status
