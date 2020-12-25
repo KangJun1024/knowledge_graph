@@ -163,7 +163,7 @@ DATABASES = {
     {
         'ENGINE': 'django.db.backends.mysql',    # 数据库引擎
         'NAME': 'new_ihp_consult', # 数据库名称
-        'HOST': '120.221.160.3', # 数据库地址，本机 ip 地址 127.0.0.1 120.221.160.3
+        'HOST': '192.167.180.4', # 数据库地址，本机 ip 地址 127.0.0.1 120.221.160.3
         'PORT': 33061, # 端口
         'USER': 'developer',  # 数据库用户名
         'PASSWORD': 'w&VMZ2CXJ$@*kAz^', # 数据库密码
