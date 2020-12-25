@@ -5,28 +5,37 @@ from utils import time_utils
 from django.db.models import Q
 import os
 import simplejson
+import logging
 
+# 日志
+error_logger = logging.getLogger('error')
+access_logger = logging.getLogger('gunicorn')
 
 
 # 上传文件
 def upload(request):
     if request.method == 'POST':
-        # 获取项目名称
-        project_name = request.POST.get("project_name")
-        print(project_name)
-        # 获取文件上传到服务器
-        files = request.FILES.getlist('file',None)
-        if not files:
-            return JsonResponse({'result':'failure'})
-        destination = open(os.path.join(settings.BASE_DIR,files[0].name), 'wb+') # 项目目录下
-        for chunk in files[0].chunks():
-            destination.write(chunk)
-        destination.close()
-        # 解析文件&批量新增数据到neo4j todo
 
-        return JsonResponse({'result':'success'})
-    else:
-        return JsonResponse({'result':'failure'})
+        try:
+            # 获取项目名称
+            project_name = request.POST.get("project_name")
+            print(project_name)
+            # 获取文件上传到服务器
+            files = request.FILES.getlist('file',None)
+            if not files:
+                return JsonResponse({'result':'failure'})
+            destination = open(os.path.join(settings.BASE_DIR,files[0].name), 'wb+') # 项目目录下
+            for chunk in files[0].chunks():
+                destination.write(chunk)
+            destination.close()
+            # 解析文件&批量新增数据到neo4j todo
+
+            # 修改项目状态
+            updateStatus(project_name,3)
+            return JsonResponse({'result': 'success'})
+        except Exception as e:
+            updateStatus(project_name, 2)
+            return JsonResponse({'result':'failure'})
 
 
 # 项目新增
@@ -34,6 +43,7 @@ def create(request:HttpRequest):
     print(request.body)
     if request.method == 'POST':
         payload = simplejson.loads(request.body)
+        access_logger.info(payload)
         # 校验项目名称
         name = payload['project_name']
         project = Project()
@@ -98,3 +108,15 @@ def detail(request):
         return JsonResponse({'result': 'failure', 'message': '无项目'})
     data = obj.to_dict()
     return JsonResponse({'result': 'success', 'data': data})
+
+#  通过项目名称获取项目并修改项目状态
+def updateStatus(name,status):
+    # 获取参数
+    base_query = Project.objects
+    obj = base_query.filter(project_name=name).first()
+    if not obj:
+        return JsonResponse({'result': 'failure', 'message': '项目不存在'})
+    obj.project_status = status
+    obj.update_time = time_utils.now()
+    obj.save()
+    return JsonResponse({'result': 'success'})
