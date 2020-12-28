@@ -17,7 +17,7 @@ def login(request):
     if not user_obj:
         return JsonResponse({'result':'failure'})
     else:
-        return JsonResponse({'result':'success'})
+        return JsonResponse({'result':'success','data':username})
 
 def statistics(request):
     #项目数量
