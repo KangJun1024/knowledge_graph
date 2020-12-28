@@ -1,6 +1,6 @@
 from django.http import JsonResponse, HttpRequest
 from knowledge_graph import settings
-from .models import Project
+from .models import Project,Field
 from utils import time_utils,common_utils
 from django.db.models import Q
 import os
@@ -125,3 +125,16 @@ def updateStatus(id,status):
     obj.update_time = time_utils.now()
     obj.save()
     return JsonResponse({'result': 'success'})
+
+# 项目领域查询
+def fieldList(request):
+    # 获取参数
+    base_query = Field.objects
+    total = base_query.count()
+    objs = [i.to_dict() for i in base_query.all()]
+    data = {
+        'result':'success',
+        'total': total,
+        'data': objs
+    }
+    return JsonResponse(data)
