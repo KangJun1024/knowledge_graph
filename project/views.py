@@ -78,6 +78,8 @@ def list(request):
     if projectFieldcode is not None and projectName is not None:
         base_query =  base_query.filter(Q(project_name__icontains=projectName) &
                           Q(project_fieldcode__icontains=projectFieldcode) & ~Q(project_status=0))
+    else:
+        base_query = base_query.filter(~Q(project_status=0))
     total = base_query.count()
     objs = [i.to_dict() for i in base_query.all()]
     data = {
