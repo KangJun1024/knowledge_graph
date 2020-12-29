@@ -116,6 +116,45 @@ def detail(request):
     data = obj.to_dict()
     return JsonResponse({'result': 'success', 'data': data})
 
+# 项目删除
+def update(request):
+    # 获取参数
+    id = request.GET.get("id")
+    update_user = request.GET.get("update_user")
+
+    print(request.body)
+    if request.method == 'POST':
+        try:
+            payload = simplejson.loads(request.body)
+            access_logger.info(payload)
+            # 校验项目名称 + 组织编码
+            id = payload['id']
+            base_query = Project.objects
+            project = base_query.filter(id=id).first()
+            if not project:
+                return JsonResponse({'result': 'failure', 'message': '项目不存在'})
+            name = payload['project_name']
+            code = payload['project_code']
+            if Project.objects.filter(Q(project_name__icontains=name) & Q(project_code__icontains=code)).exists():
+                return JsonResponse({'result': 'failure','message':'项目名称重复'})
+            project.project_name = payload['project_name']
+            project.project_code = payload['project_code']
+            project.project_status = 1
+            project.project_introduction = payload['project_introduction']
+            project.project_photo = payload['project_photo']
+            project.project_fieldcode = payload['project_fieldcode']
+            project.project_fieldname = payload['project_fieldname']
+            project.update_user = payload['update_user']
+            project.project_id = id
+            project.project_concepts = 0
+            project.project_triples = 0
+            project.update_time = time_utils.now()
+            project.save()
+            return JsonResponse({'result': 'success', 'data': id})
+        except Exception as e:
+            return JsonResponse({'result': 'failure'})
+
+
 #  通过项目名称获取项目并修改项目状态
 def updateStatus(id,status):
     # 获取参数
