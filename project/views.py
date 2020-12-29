@@ -17,8 +17,8 @@ def upload(request):
     if request.method == 'POST':
         try:
             # 获取项目名称
-            project_name = request.POST.get("project_name")
-            print(project_name)
+            project_id = request.POST.get("project_id")
+            print(project_id)
             # 获取文件上传到服务器
             files = request.FILES.getlist('file',None)
             if not files:
@@ -30,10 +30,10 @@ def upload(request):
             # 解析文件&批量新增数据到neo4j todo
 
             # 修改项目状态
-            updateStatus(project_name,3)
+            updateStatus(project_id,3)
             return JsonResponse({'result': 'success'})
         except Exception as e:
-            updateStatus(project_name, 2)
+            updateStatus(project_id, 2)
             return JsonResponse({'result':'failure'})
 
 
