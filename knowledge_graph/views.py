@@ -2,7 +2,7 @@ from django.http import JsonResponse
 
 from knowledge_graph import models
 from project import models as project
-from utils import time_utils
+from utils import time_utils,query_utils
 import logging
 import simplejson
 from django.db.models import Q
@@ -23,10 +23,12 @@ def statistics(request):
     #项目数量
     count = list(project.Project.objects.filter(~Q(project_status=0)))
     count = len(count)
-    #三元组数 todo
-    #概念数 todo
+    #三元组数
+    triples = query_utils.get_nd_rel_ct([],1)
+    #概念数
+    concepts = query_utils.get_nd_rel_ct([],0)
 
-    return JsonResponse({'result':'success','projects':count,'triples':100,'concepts':1200})
+    return JsonResponse({'result':'success','projects':count,'triples':triples,'concepts':concepts})
 
 def chart(request):
     # 定义字典

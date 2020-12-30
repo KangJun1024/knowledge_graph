@@ -61,7 +61,7 @@ def create(request:HttpRequest):
             project.project_concepts = 0
             project.project_triples = 0
             project.create_time = time_utils.now()
-            if Project.objects.filter(Q(project_name__icontains=name) & Q(project_code__icontains=code)).exists():
+            if Project.objects.filter(Q(project_name__icontains=name) & Q(project_code__icontains=code) & ~Q(project_status=0)).exists():
                 return JsonResponse({'result': 'failure','message':'项目名称重复'})
             project.save()
             return JsonResponse({'result': 'success','data':id})
@@ -137,7 +137,7 @@ def update(request):
             code = payload['project_code']
             # 判断是否有名称 组织编码修改
             if name != project.project_name or code != project.project_code:
-                if Project.objects.filter(Q(project_name__icontains=name) & Q(project_code__icontains=code)).exists():
+                if Project.objects.filter(Q(project_name__icontains=name) & Q(project_code__icontains=code) & ~Q(project_status=0)).exists():
                     return JsonResponse({'result': 'failure', 'message': '项目名称重复'})
             project.project_name = payload['project_name']
             project.project_code = payload['project_code']
