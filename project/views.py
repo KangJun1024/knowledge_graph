@@ -135,8 +135,10 @@ def update(request):
                 return JsonResponse({'result': 'failure', 'message': '项目不存在'})
             name = payload['project_name']
             code = payload['project_code']
-            if Project.objects.filter(Q(project_name__icontains=name) & Q(project_code__icontains=code)).exists():
-                return JsonResponse({'result': 'failure','message':'项目名称重复'})
+            # 判断是否有名称 组织编码修改
+            if name != project.project_name or code != project.project_code:
+                if Project.objects.filter(Q(project_name__icontains=name) & Q(project_code__icontains=code)).exists():
+                    return JsonResponse({'result': 'failure', 'message': '项目名称重复'})
             project.project_name = payload['project_name']
             project.project_code = payload['project_code']
             project.project_status = 1
