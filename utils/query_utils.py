@@ -83,8 +83,8 @@ def get_prj_kg(prj_label:str):
         for r in r_index:
             rel_info = {}
             rel_info["name"] = res[r]
-            rel_info["source"] = res[r+1].identity
-            rel_info["target"] = res[r-1].identity
+            rel_info["source"] = str(res[r+1].identity)
+            rel_info["target"] = str(res[r-1].identity)
             rels.append(copy.deepcopy(rel_info))
         #获取节点
         for i in n_index:
