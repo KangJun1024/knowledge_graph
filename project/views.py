@@ -1,7 +1,7 @@
 from django.http import JsonResponse, HttpRequest
 from knowledge_graph import settings
 from .models import Project,Field
-from utils import time_utils,common_utils
+from utils import time_utils,common_utils,query_utils
 from django.db.models import Q
 import os
 import simplejson
@@ -114,14 +114,18 @@ def detail(request):
     if not obj:
         return JsonResponse({'result': 'failure', 'message': '无项目'})
     data = obj.to_dict()
+    # 获取 项目id project_id 现在写死 todo
+    project_id = data['project_id']
+    print(project_id)
+    trees = query_utils.get_prj_kg('P10001')
+    data['trees'] = trees
+    # print(data)
+
     return JsonResponse({'result': 'success', 'data': data})
 
 # 项目删除
 def update(request):
     # 获取参数
-    id = request.GET.get("id")
-    update_user = request.GET.get("update_user")
-
     print(request.body)
     if request.method == 'POST':
         try:
