@@ -28,7 +28,7 @@ def statistics(request):
     # #概念数
     # concepts = query_utils.get_nd_rel_ct([],0)
 
-    return JsonResponse({'result':'success','projects':count,'triples':100,'concepts':100})
+    return JsonResponse({'result':'success','projects':count,'triples':100,'concepts':1200})
 
 def chart(request):
     # 定义字典

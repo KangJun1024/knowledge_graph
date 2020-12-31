@@ -185,3 +185,25 @@ def fieldList(request):
         'data': objs
     }
     return JsonResponse(data)
+
+# 通过领域获取项目列表 一对多
+# 项目列表
+def queryList(request):
+    # 获取参数
+    projectFieldcode = request.GET.get("project_fieldcode")
+    print(projectFieldcode)
+    base_query = Project.objects
+    if projectFieldcode is not None:
+        base_query =  base_query.filter(Q(project_fieldcode__icontains=projectFieldcode) & Q(project_status=3))
+    else:
+        base_query = base_query.filter(Q(project_status=3))
+    total = base_query.count()
+    objs = [i.to_dict() for i in base_query.all()]
+    data = {
+        'result':'success',
+        'total': total,
+        'data': objs
+    }
+    return JsonResponse(data)
+
+
