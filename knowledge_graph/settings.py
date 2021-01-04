@@ -12,12 +12,12 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 from pathlib import Path
 import os
-import platform
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-IMPORT_DIR = "C:\develop\packet\\neo4j-community-3.5.25-windows\\neo4j-community-3.5.25\import"
+#IMPORT_DIR = "C:\develop\packet\\neo4j-community-3.5.25-windows\\neo4j-community-3.5.25\import"
+IMPORT_DIR = "/data460/django/neo4j-community-3.5.25/import"
 
 
 # Quick-start development settings - unsuitable for production
@@ -165,7 +165,7 @@ DATABASES = {
     {
         'ENGINE': 'django.db.backends.mysql',    # 数据库引擎
         'NAME': 'new_ihp_consult', # 数据库名称
-        'HOST': '120.221.160.3', # 数据库地址，本机 ip 地址 127.0.0.1 120.221.160.3
+        'HOST': '120.221.160.106', # 数据库地址，本机 ip 地址 127.0.0.1 120.221.160.3
         'PORT': 33061, # 端口
         'USER': 'developer',  # 数据库用户名
         'PASSWORD': 'w&VMZ2CXJ$@*kAz^', # 数据库密码

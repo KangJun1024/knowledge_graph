@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from py2neo import Graph
-from pandas import Series, DataFrame
+from pandas import DataFrame
 import pandas as pd
 import os
 import re
 import time
 
-graph = Graph("bolt://127.0.0.1:7687", username="neo4j", password="neo4j1")
+graph = Graph("bolt://127.0.0.1:8002", username="neo4j", password="123456")
 head = {}
 ori_vocab = DataFrame()
 std_vocab = DataFrame()
