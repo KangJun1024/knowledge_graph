@@ -1,7 +1,7 @@
 from django.http import JsonResponse, HttpRequest
 from knowledge_graph import settings
 from .models import Project,Field
-from utils import time_utils,common_utils
+from utils import time_utils,common_utils,import_utils,query_utils
 from django.db.models import Q
 import os
 import simplejson
@@ -20,15 +20,25 @@ def upload(request):
             project_id = request.POST.get("project_id")
             print(project_id)
             # 获取文件上传到服务器
+            print("-----------开始任务2------------")
             files = request.FILES.getlist('file',None)
             if not files:
                 return JsonResponse({'result':'failure'})
-            destination = open(os.path.join(settings.BASE_DIR,files[0].name), 'wb+') # 项目目录下
+            # 生成项目上传文件夹
+            print("-----------开始任务3------------")
+            LOG_DIR = os.path.join(settings.IMPORT_DIR, project_id)
+            print(LOG_DIR)
+            if not os.path.exists(LOG_DIR):
+                os.makedirs(LOG_DIR)
+            path = open(os.path.join(LOG_DIR,files[0].name), 'wb+') # 项目目录下
             for chunk in files[0].chunks():
-                destination.write(chunk)
-            destination.close()
-            # 解析文件&批量新增数据到neo4j todo
-
+                path.write(chunk)
+            path.close()
+            # 解析文件&批量新增数据到neo4j
+            print("-----------开始任务------------")
+            import_utils.excel_to_csv(os.path.join(LOG_DIR,files[0].name))
+            import_utils.load_csv(project_id)
+            print("-----------结束任务------------")
             # 修改项目状态
             updateStatus(project_id,3)
             return JsonResponse({'result': 'success'})
@@ -114,12 +124,12 @@ def detail(request):
     if not obj:
         return JsonResponse({'result': 'failure', 'message': '无项目'})
     data = obj.to_dict()
-    # 获取 项目id project_id 现在写死 todo
+    # 获取 项目id project_id
     project_id = data['project_id']
     print(project_id)
-    # trees = query_utils.get_prj_kg('P10001')
-    # data['trees'] = trees
-    # print(data)
+    trees = query_utils.get_prj_kg(project_id)
+    data['trees'] = trees
+    print(data)
 
     return JsonResponse({'result': 'success', 'data': data})
 
