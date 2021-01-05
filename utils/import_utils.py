@@ -75,6 +75,8 @@ def excel_to_csv(excel_path):
         sheet_into_df(df)
     clean_df()
     # 输出到csv
+    print(ori_vocab[0:2])
+    print(is_rel[0:2])
     print("输出到csv")
     dir = os.path.dirname(excel_path)
     ori_vocab.to_csv(os.path.join(dir, "ori_vocab.csv"), header=None, index=None)
