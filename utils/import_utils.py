@@ -72,16 +72,16 @@ def excel_to_csv(excel_path):
     reader = pd.ExcelFile(excel_path)
     for name in reader.sheet_names:
         df = pd.read_excel(reader, sheet_name=name)
-        sheet_into_df(df, head, ori_vocab, std_vocab, is_rel, belong_rel)
-    clean_df(head, ori_vocab, std_vocab, is_rel, belong_rel)
-    # 输出到csv
+        head, ori_vocab, std_vocab, is_rel, belong_rel = sheet_into_df(df, head, ori_vocab, std_vocab, is_rel, belong_rel)
     print(ori_vocab[0:2])
-    print("输出到csv")
+    ori_vocab, std_vocab, is_rel, belong_rel = clean_df(head, ori_vocab, std_vocab, is_rel, belong_rel)
+    # 输出到csv
     dir = os.path.dirname(excel_path)
     ori_vocab.to_csv(os.path.join(dir, "ori_vocab.csv"), header=None, index=None)
     std_vocab.to_csv(os.path.join(dir, "std_vocab.csv"), header=None, index=None)
     is_rel.to_csv(os.path.join(dir, "is_rel.csv"), header=None, index=None)
     belong_rel.to_csv(os.path.join(dir, "belong_to_rel.csv"), header=None, index=None)
+    print("已输出到csv")
     return head
 
 
@@ -112,6 +112,10 @@ def sheet_into_df(df, head, ori_vocab, std_vocab, is_rel, belong_rel):
             df_iloc = df.iloc[:, head_index["标准词"][i - 1][0]:head_index["标准词"][i][1]]
             df_iloc.columns = head_col["标准词"] + [(h + "_1") for h in head_col["标准词"]]
             belong_rel = belong_rel.append(df_iloc)
+    return head, ori_vocab, std_vocab, is_rel, belong_rel
+    
+
+   
 
 
 def clean_df(head,ori_vocab, std_vocab, is_rel, belong_rel):
@@ -180,6 +184,7 @@ def clean_df(head,ori_vocab, std_vocab, is_rel, belong_rel):
                           right_on='uniq')  # left join取得标准词uid
     belong_rel = belong_rel[['uniq_std', 'index']]
     belong_rel = belong_rel.rename(columns={"index": "uniq_std_1"})
+    return ori_vocab, std_vocab, is_rel, belong_rel
 
 
 
@@ -238,6 +243,7 @@ def get_localtime():
 if __name__ == "__main__":
     # try:
     path = '/data/zhuwd/neo4j-community-3.5.12/import/P20002/KG_TEST.xlsx'
+    #path = 'D:/资料/数据治理/Neo4j知识图谱/KG_TEST.xlsx'
     print(get_localtime() + "-----------开始任务------------")
     head = excel_to_csv(path)
     load_csv('P20002',head)
