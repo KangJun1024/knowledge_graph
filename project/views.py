@@ -141,6 +141,16 @@ def detail(request):
     # 获取 项目id project_id
     project_id = data['project_id']
     print(project_id)
+
+    arr = [project_id]
+    # 三元组数
+    triples = query_utils.get_nd_rel_ct(arr, 1)
+    print(triples)
+    # 概念数
+    concepts = query_utils.get_nd_rel_ct(arr, 0)
+    print(concepts)
+    data['project_triples'] = triples
+    data['project_concepts'] = concepts
     trees = query_utils.get_prj_kg(project_id)
     data['trees'] = trees
     print(data)
