@@ -40,7 +40,7 @@ def chart(request):
         datatimeStart = time_utils.month2DateTime(i)
         datatimeEnd = time_utils.delta_month(datatimeStart,1)
         # 获取项目数量
-        project_count = list(project.Project.objects.filter(create_time__range=(datatimeStart,datatimeEnd)))
+        project_count = list(project.Project.objects.filter(~Q(create_time__range=(datatimeStart,datatimeEnd) & ~Q(project_status=0))))
         project_count = len(project_count)
         result[i] = project_count
 
