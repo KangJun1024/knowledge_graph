@@ -74,7 +74,7 @@ def create(request:HttpRequest):
             project.project_triples = 0
             project.create_time = time_utils.now()
             if Project.objects.filter(Q(project_name__icontains=name) & Q(project_code__icontains=code) & ~Q(project_status=0)).exists():
-                return JsonResponse({'result': 'failure','message':'项目名称重复'})
+                return JsonResponse({'result': 'failure','message':'同组织下已有同名项目，请重新填写'})
             project.save()
             return JsonResponse({'result': 'success','data':id})
         except Exception as e:
@@ -88,7 +88,7 @@ def list(request):
     projectName = request.GET.get("project_name")
     base_query = Project.objects.order_by('project_status')
     if projectFieldcode is not None and projectName is not None:
-        base_query =  base_query.filter(Q(project_name__icontains=projectName) &
+        base_query = base_query.filter(Q(project_name__icontains=projectName) &
                           Q(project_fieldcode__icontains=projectFieldcode) & ~Q(project_status=0))
     else:
         base_query = base_query.filter(~Q(project_status=0))
@@ -98,7 +98,7 @@ def list(request):
     for obj in objs:
         id = obj['project_id']
         print(obj['project_id'])
-        arr = [id]
+        arr = [str(id)]
         # 三元组数
         triples = query_utils.get_nd_rel_ct(arr, 1)
         print(triples)
@@ -224,22 +224,32 @@ def fieldList(request):
 
 # 通过领域获取项目列表 一对多
 # 项目列表
-def queryList(request):
+def queryList(projectFieldcode):
     # 获取参数
-    projectFieldcode = request.GET.get("project_fieldcode")
+    # projectFieldcode = request.GET.get("project_fieldcode")
     print(projectFieldcode)
     base_query = Project.objects
     if projectFieldcode is not None:
         base_query =  base_query.filter(Q(project_fieldcode__icontains=projectFieldcode) & Q(project_status=3))
     else:
         base_query = base_query.filter(Q(project_status=3))
-    total = base_query.count()
     objs = [i.to_dict() for i in base_query.all()]
-    data = {
-        'result':'success',
-        'total': total,
-        'data': objs
-    }
-    return JsonResponse(data)
+    return objs
 
-
+# 应用归一查询 搜索概念
+def queryConcept(request):
+    try:
+        # 获取参数
+        # 领域 概念
+        projectFieldcode = request.GET.get("project_fieldcode")
+        print(projectFieldcode)
+        conceptName = request.GET.get("concept_name")
+        # 通过领域获取项目列表
+        objs = queryList(projectFieldcode)
+        # 获取
+        # print(objs)
+        trees = query_utils.query_normalize_all(objs, '由霍乱弧菌埃尔托型引起的霍乱6')
+        return JsonResponse({'result':'success','data':trees})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'result':'failure'})

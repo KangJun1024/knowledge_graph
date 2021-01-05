@@ -136,9 +136,13 @@ def query_normalize_all(params:[],name:str):
         }
     ]
     """
+    print("根据领域，对所有相关项目进行归一查询")
     cards_all = []
     for param in params:
-        cards = query_normalize(param["prj_label"],param["prj_name"],param["area"],name)
+        # print(param)
+        cards = query_normalize(param["project_id"],param["project_name"],param["project_fieldcode"],name)
+        # print(cards)
+
         #cards_all.append(copy.deepcopy(cards))
         cards_all = cards_all + cards
     return cards_all
@@ -149,7 +153,9 @@ def query_normalize(prj_label,prj_name,area,name):
     某项目，某领域的归一查询
     """
     cql = "match (n:%s) where n.name='%s' return id(n),labels(n)"%(prj_label,name)
+    print(cql)
     result = graph.run(cql).to_ndarray()
+    print(result)
     cards = []
     for res in result:
         card = {}
@@ -234,14 +240,9 @@ if __name__ == "__main__":
     # 应用诡异查询
     arr = [
             {
-                "prj_label":"P10001",
-                "prj_name":"测试项目",
-                "area":"测试领域"
-            },
-            {
-                "prj_label":"P10001",
-                "prj_name":"测试项目2",
-                "area":"测试领域2"
+                "project_id":"PJ7f6fd5924ef911eb8817fa163eac98f2",
+                "project_name":"PJ7f6fd5924ef911eb8817fa163eac98f2",
+                "project_fieldcode":"kangjun"
             }
         ]
     trees = query_normalize_all(arr, '由霍乱弧菌埃尔托型引起的霍乱6')

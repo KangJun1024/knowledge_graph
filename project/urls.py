@@ -5,6 +5,7 @@ urlpatterns = [
     path('project/upload/', views.upload), #上传
     path('project/list/', views.list),
     path('project/queryList/', views.queryList),
+    path('project/queryConcept/', views.queryConcept),
     path('project/create/', views.create),
     path('project/delete/', views.delete),
     path('project/detail/', views.detail),

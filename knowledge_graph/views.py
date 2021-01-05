@@ -45,6 +45,5 @@ def chart(request):
         project_count = len(project_count)
         result[i] = project_count
 
-
     return JsonResponse({'result':'success','data':result})
 
