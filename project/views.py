@@ -36,8 +36,8 @@ def upload(request):
             path.close()
             # 解析文件&批量新增数据到neo4j
             print("-----------开始任务------------")
-            import_utils.excel_to_csv(os.path.join(LOG_DIR,files[0].name))
-            import_utils.load_csv(project_id)
+            result = import_utils.excel_to_csv(os.path.join(LOG_DIR,files[0].name))
+            import_utils.load_csv(project_id,result)
             print("-----------结束任务------------")
             # 修改项目状态
             updateStatus(project_id,3)
