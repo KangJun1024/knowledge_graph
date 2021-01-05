@@ -92,6 +92,20 @@ def list(request):
         base_query = base_query.filter(~Q(project_status=0))
     total = base_query.count()
     objs = [i.to_dict() for i in base_query.all()]
+    # 获取各个项目三元组数和概念数
+    for obj in objs:
+        id = obj['project_id']
+        print(obj['project_id'])
+        arr = [id]
+        # 三元组数
+        triples = query_utils.get_nd_rel_ct(arr, 1)
+        print(triples)
+        # 概念数
+        concepts = query_utils.get_nd_rel_ct(arr, 0)
+        print(concepts)
+        obj['project_triples'] = triples
+        obj['project_concepts'] = concepts
+
     data = {
         'result':'success',
         'total': total,
