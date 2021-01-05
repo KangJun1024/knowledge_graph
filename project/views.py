@@ -43,6 +43,7 @@ def upload(request):
             updateStatus(project_id,3)
             return JsonResponse({'result': 'success'})
         except Exception as e:
+            print(e)
             updateStatus(project_id, 2)
             return JsonResponse({'result':'failure'})
 
