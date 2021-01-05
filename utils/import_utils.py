@@ -7,15 +7,8 @@ import re
 import time
 
 graph = Graph("bolt://127.0.0.1:8002", username="neo4j", password="123456")
-head = {}
-ori_vocab = DataFrame()
-std_vocab = DataFrame()
-is_rel = DataFrame()
-belong_rel = DataFrame()
 
-
-def load_csv(labels):
-    global head
+def load_csv(labels,head):
     print(get_localtime() + "开始上传数据！")
     # 创建ori_vocab节点
     ori_head = head["原始词"]
@@ -68,28 +61,63 @@ def excel_to_csv(excel_path):
     读取excel内容，输出csv到同目录
     excel路径最好放在 $NEO4J_HOME/import/$prj/
     """
-    global ori_vocab, std_vocab, is_rel, belong_rel
+    #原始词、标准词字段表头信息
+    head = {}
+    #定义需要输出csv的dataframe变量
+    ori_vocab = DataFrame()
+    std_vocab = DataFrame()
+    is_rel = DataFrame()
+    belong_rel = DataFrame()
+
     reader = pd.ExcelFile(excel_path)
     for name in reader.sheet_names:
         df = pd.read_excel(reader, sheet_name=name)
-        sheet_into_df(df)
-    clean_df()
+        sheet_into_df(df, head, ori_vocab, std_vocab, is_rel, belong_rel)
+    clean_df(head, ori_vocab, std_vocab, is_rel, belong_rel)
     # 输出到csv
     print(ori_vocab[0:2])
-    print(is_rel[0:2])
     print("输出到csv")
     dir = os.path.dirname(excel_path)
     ori_vocab.to_csv(os.path.join(dir, "ori_vocab.csv"), header=None, index=None)
     std_vocab.to_csv(os.path.join(dir, "std_vocab.csv"), header=None, index=None)
     is_rel.to_csv(os.path.join(dir, "is_rel.csv"), header=None, index=None)
     belong_rel.to_csv(os.path.join(dir, "belong_to_rel.csv"), header=None, index=None)
+    return head
 
 
-def clean_df():
+def sheet_into_df(df, head, ori_vocab, std_vocab, is_rel, belong_rel):
+    """
+    将sheet的数据内容，输出到各个dataframe
+    """
+    head_index = get_head_index(df)
+    head_col = get_head_col(df)
+    if len(head) == 0 or len(head["原始词"]) == 0 or len(head["标准词"]) == 0:
+        head = head_col  # 记录原始词标准词所有属性列
+    for o in head_index["原始词"]:
+        # 原始词
+        df_iloc = df.iloc[:, o[0]:o[1]]  # 取指定列，下同
+        df_iloc.columns = head_col["原始词"]  # 替换标题头，下同
+        ori_vocab = ori_vocab.append(df_iloc)
+        # is关系
+        df_iloc = df.iloc[:, o[0]:head_index["标准词"][0][1]]
+        df_iloc.columns = head_col["原始词"] + head_col["标准词"]
+        is_rel = is_rel.append(df_iloc)
+    for i in range(len(head_index["标准词"])):
+        # 标准词
+        df_iloc = df.iloc[:, head_index["标准词"][i][0]:head_index["标准词"][i][1]]
+        df_iloc.columns = head_col["标准词"]
+        std_vocab = std_vocab.append(df_iloc)
+        if i > 0:
+            # belong_to关系
+            df_iloc = df.iloc[:, head_index["标准词"][i - 1][0]:head_index["标准词"][i][1]]
+            df_iloc.columns = head_col["标准词"] + [(h + "_1") for h in head_col["标准词"]]
+            belong_rel = belong_rel.append(df_iloc)
+
+
+def clean_df(head,ori_vocab, std_vocab, is_rel, belong_rel):
     """
     清洗dataframe，并添加索引
     """
-    global ori_vocab, std_vocab, is_rel, belong_rel
     # 去重，并替换None值与特殊字符
     ori_vocab = ori_vocab.drop_duplicates().fillna('')  # .replace("\\","\\\\").replace("'","\\'")
     std_vocab = std_vocab.drop_duplicates().fillna('')  # .replace("\\","\\\\").replace("'","\\'")
@@ -154,36 +182,6 @@ def clean_df():
     belong_rel = belong_rel.rename(columns={"index": "uniq_std_1"})
 
 
-def sheet_into_df(df):
-    """
-    将sheet的数据内容，输出到各个dataframe
-    """
-    global head, ori_vocab, std_vocab, is_rel, belong_rel
-    global head
-    head_index = get_head_index(df)
-    head_col = get_head_col(df)
-    if len(head) == 0 or len(head["原始词"]) == 0 or len(head["标准词"]) == 0:
-        head = head_col  # 记录原始词标准词所有属性列
-    for o in head_index["原始词"]:
-        # 原始词
-        df_iloc = df.iloc[:, o[0]:o[1]]  # 取指定列，下同
-        df_iloc.columns = head_col["原始词"]  # 替换标题头，下同
-        ori_vocab = ori_vocab.append(df_iloc)
-        # is关系
-        df_iloc = df.iloc[:, o[0]:head_index["标准词"][0][1]]
-        df_iloc.columns = head_col["原始词"] + head_col["标准词"]
-        is_rel = is_rel.append(df_iloc)
-    for i in range(len(head_index["标准词"])):
-        # 标准词
-        df_iloc = df.iloc[:, head_index["标准词"][i][0]:head_index["标准词"][i][1]]
-        df_iloc.columns = head_col["标准词"]
-        std_vocab = std_vocab.append(df_iloc)
-        if i > 0:
-            # belong_to关系
-            df_iloc = df.iloc[:, head_index["标准词"][i - 1][0]:head_index["标准词"][i][1]]
-            df_iloc.columns = head_col["标准词"] + [(h + "_1") for h in head_col["标准词"]]
-            belong_rel = belong_rel.append(df_iloc)
-
 
 def get_head_index(df):
     """
@@ -241,8 +239,8 @@ if __name__ == "__main__":
     # try:
     path = '/data/zhuwd/neo4j-community-3.5.12/import/P20002/KG_TEST.xlsx'
     print(get_localtime() + "-----------开始任务------------")
-    excel_to_csv(path)
-    load_csv('P20002')
+    head = excel_to_csv(path)
+    load_csv('P20002',head)
     print(get_localtime() + "-----------结束任务------------")
 # except Exception as e:
 #     print(e)
