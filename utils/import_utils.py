@@ -73,7 +73,6 @@ def excel_to_csv(excel_path):
     for name in reader.sheet_names:
         df = pd.read_excel(reader, sheet_name=name)
         head, ori_vocab, std_vocab, is_rel, belong_rel = sheet_into_df(df, head, ori_vocab, std_vocab, is_rel, belong_rel)
-    print(ori_vocab[0:2])
     ori_vocab, std_vocab, is_rel, belong_rel = clean_df(head, ori_vocab, std_vocab, is_rel, belong_rel)
     # 输出到csv
     dir = os.path.dirname(excel_path)
@@ -81,7 +80,8 @@ def excel_to_csv(excel_path):
     std_vocab.to_csv(os.path.join(dir, "std_vocab.csv"), header=None, index=None)
     is_rel.to_csv(os.path.join(dir, "is_rel.csv"), header=None, index=None)
     belong_rel.to_csv(os.path.join(dir, "belong_to_rel.csv"), header=None, index=None)
-    print("已输出到csv")
+    print(os.path.join(dir, "ori_vocab.csv"))
+    print("已输出到csv!")
     return head
 
 
