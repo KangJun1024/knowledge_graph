@@ -248,8 +248,24 @@ def queryConcept(request):
         objs = queryList(projectFieldcode)
         # 获取
         # print(objs)
-        trees = query_utils.query_normalize_all(objs, '由霍乱弧菌埃尔托型引起的霍乱6')
-        return JsonResponse({'result':'success','data':trees})
+        trees = query_utils.query_normalize_all(objs, conceptName)
+        total = len(trees)
+        return JsonResponse({'result':'success','data':trees,'total':total})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'result':'failure'})
+
+# 应用归一查询 概念详情
+def queryConceptInfo(request):
+    try:
+        # 获取参数
+        # 领域 概念
+        projectFieldcode = request.GET.get("project_fieldcode")
+        projectId = request.GET.get("project_id")
+        conceptName = request.GET.get("concept_name")
+        projectName = request.GET.get("project_name")
+        tree = query_utils.query_normalize(projectId,projectName,projectFieldcode,conceptName)
+        return JsonResponse({'result': 'success','data':tree})
     except Exception as e:
         print(e)
         return JsonResponse({'result':'failure'})

@@ -162,6 +162,7 @@ def query_normalize(prj_label,prj_name,area,name):
         card["node_id"] = res[0]
         card["node_name"] = name
         card["prj_name"] = prj_name
+        card["prj_id"] = prj_label
         card["area"] = area
         card["std_vocab"] = ""
         card["syn_vocab"] = []
