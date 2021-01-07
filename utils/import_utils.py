@@ -63,7 +63,7 @@ def load_csv(labels,head):
 def excel_to_csv(excel_path):
     """
     读取excel内容，输出csv到同目录
-    excel路径，放在 $NEO4J_HOME/import/$prj/
+    excel路径最好放在 $NEO4J_HOME/import/$prj/
     """
     #原始词、标准词字段表头信息
     head = {}

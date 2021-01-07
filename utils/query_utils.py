@@ -4,7 +4,7 @@ from py2neo import Graph
 import copy
 import simplejson
 
-graph = Graph("bolt://127.0.0.1:8002", username="neo4j", password="123456")
+graph = Graph("bolt://120.221.160.106:8002", username="neo4j", password="123456")
 
 #获取概念或三元组数量
 def get_nd_rel_ct(labels:list,type:int):
@@ -210,6 +210,60 @@ def node_info(n_id,prj_label):
     node_info["properties"] = properties
     return node_info
 
+#单一项目归一查询 20200107
+def query_normalize_detail(prj_label,prj_name,area,name,node_id):
+    """
+    某项目，某领域的归一查询
+    """
+    cql = "match (n:%s) where n.name='%s' and id(n)=%s return id(n),labels(n)"%(prj_label,name,node_id)
+    print(cql)
+    result = graph.run(cql).to_ndarray()
+    print(result)
+    cards = []
+    for res in result:
+        card = {}
+        card["node_id"] = res[0]
+        card["node_name"] = name
+        card["prj_name"] = prj_name
+        card["prj_id"] = prj_label
+        card["area"] = area
+        card["std_vocab"] = ""
+        card["syn_vocab"] = []
+        card["graph"] = {}
+        cql_tree = ""
+        if "原始词" in res[1]:
+            cql = "match (n)-[r:is]->(m) where id(n)=%s return id(m),m.name"%(res[0])
+            rs = graph.run(cql).to_ndarray()
+            if len(rs) > 0:
+                cql_tree = "match (n)-[r:is]->(m) where id(m)=%s return m,type(r),n"%(rs[0][0])
+                card["std_vocab"] = str(rs[0][1])
+        elif "标准词" in res[1]:
+            cql_tree = "match (n)<-[r:is]-(m) where id(n)=%s return n,type(r),m"%(res[0])
+            card["std_vocab"] = name
+        rst = graph.run(cql_tree).to_ndarray()
+        if "" != cql_tree and len(rst) > 0:
+            tree = tree_info(rst,prj_label)#返回归一树信息
+            card["syn_vocab"] = [tr["name"] for tr in tree["nodes"]]
+            card["syn_vocab"].remove(name)
+            card["graph"] = tree
+        else:
+            tree = {}#按树结构只返回一个节点
+            tree["nodes"] = [node_info(res[0],prj_label)]
+            tree["rels"] = []
+            card["syn_vocab"] = []
+            card["graph"] = tree
+        cards.append(copy.deepcopy(card))
+    return cards
+
+
+
+#通过节点id node_id获取节点 选中/聚焦数据
+def select_node(n_id,prj_label):
+    cql_tree = "match (n:%s)-[r]->(m) where id(n)=%s return n,type(r),m" %(prj_label,n_id)
+    rst = graph.run(cql_tree).to_ndarray()
+    tree = tree_info(rst, prj_label)
+    return tree
+
 
 
 
@@ -239,15 +293,17 @@ if __name__ == "__main__":
     # print(type(trees))
 
     # 应用诡异查询
-    arr = [
-            {
-                "project_id":"PJ7f6fd5924ef911eb8817fa163eac98f2",
-                "project_name":"PJ7f6fd5924ef911eb8817fa163eac98f2",
-                "project_fieldcode":"kangjun"
-            }
-        ]
-    trees = query_normalize_all(arr, '由霍乱弧菌埃尔托型引起的霍乱6')
-
-
-    trees = simplejson.dumps(trees,ensure_ascii=False)
-    print(trees)
+    # arr = [
+    #         {
+    #             "project_id":"PJ7f6fd5924ef911eb8817fa163eac98f2",
+    #             "project_name":"PJ7f6fd5924ef911eb8817fa163eac98f2",
+    #             "project_fieldcode":"kangjun"
+    #         }
+    #     ]
+    # trees = query_normalize_all(arr, '由霍乱弧菌埃尔托型引起的霍乱6')
+    #
+    #
+    # trees = simplejson.dumps(trees,ensure_ascii=False)
+    # print(trees)
+    node = select_node(8738349,'PJ1dacfe724fc411ebb771fa163eac98f2')
+    print(node)

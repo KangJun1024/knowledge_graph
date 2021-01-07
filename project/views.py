@@ -262,9 +262,10 @@ def queryConceptInfo(request):
         # 领域 概念
         projectFieldcode = request.GET.get("project_fieldcode")
         projectId = request.GET.get("project_id")
+        nodeId = request.GET.get("node_id")
         conceptName = request.GET.get("concept_name")
         projectName = request.GET.get("project_name")
-        tree = query_utils.query_normalize(projectId,projectName,projectFieldcode,conceptName)
+        tree = query_utils.query_normalize_detail(projectId,projectName,projectFieldcode,conceptName,nodeId)
         return JsonResponse({'result': 'success','data':tree})
     except Exception as e:
         print(e)
