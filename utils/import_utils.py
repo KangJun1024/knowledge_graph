@@ -6,9 +6,13 @@ import os
 import re
 import time
 
-graph = Graph("bolt://127.0.0.1:8002", username="neo4j", password="123456")
+graph = Graph("bolt://120.221.160.106:8002", username="neo4j", password="123456")
 
 def load_csv(labels,head):
+    """
+    labels:项目标签，这里即项目id
+    head：原始词、标准词标题头
+    """
     print(get_localtime() + "开始上传数据！")
     # 创建ori_vocab节点
     ori_head = head["原始词"]
@@ -59,7 +63,7 @@ def load_csv(labels,head):
 def excel_to_csv(excel_path):
     """
     读取excel内容，输出csv到同目录
-    excel路径最好放在 $NEO4J_HOME/import/$prj/
+    excel路径，放在 $NEO4J_HOME/import/$prj/
     """
     #原始词、标准词字段表头信息
     head = {}
