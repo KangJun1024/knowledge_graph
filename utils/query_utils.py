@@ -255,14 +255,76 @@ def query_normalize_detail(prj_label,prj_name,area,name,node_id):
         cards.append(copy.deepcopy(card))
     return cards
 
+#根据查询结果返回树结构信息 20200107
+def query_path(arr,result,prj_label):
+    if result is not None:
+        if result[0][4] is not None and result[0][0]['out_node'] != '':
+            arr.append(result[0][0]['name'])
+        else:
+            arr.append(result[0][0]['name'])
+            return arr
+    # 递归获取上级节点
+    if len(result) > 0:
+        cql_tree = "match (n:%s)-[r]->(m) where id(n)=%s return m,type(r),n,id(n),n.out_node" % (prj_label,result[0][4])
+        rst = graph.run(cql_tree).to_ndarray()
+        query_path(arr,rst, prj_label)
+    return arr
 
 
 #通过节点id node_id获取节点 选中/聚焦数据
-def select_node(n_id,prj_label):
-    cql_tree = "match (n:%s)-[r]->(m) where id(n)=%s return n,type(r),m" %(prj_label,n_id)
-    rst = graph.run(cql_tree).to_ndarray()
-    tree = tree_info(rst, prj_label)
-    return tree
+def select_node(node_id,prj_label):
+    """
+    项目选中图谱  概念名 路径 标准词 同义词 图谱数据
+    选中节点
+    :param node_id:
+    :param prj_label:
+    :return:
+    """
+    # 查询节点类型
+    cql = "match (n:%s) where id(n)=%s return id(n),labels(n),n.name" % (prj_label,node_id)
+    result = graph.run(cql).to_ndarray()
+    card = {}
+    for res in result:
+        card["node_id"] = res[0]
+        card["node_name"] = res[2]
+        card["std_vocab"] = "" # 标准词
+        card["syn_vocab"] = [] # 同义词  ?
+        card["path"] = [] # 路径
+        card["graph"] = {} # 选中数  ?
+        cql_tree = ""
+        path = ""
+        # 原始词和标准词区分
+        if "原始词" in res[1]:
+            cql = "match (n)-[r:is]->(m) where id(n)=%s return id(m),m.name" % (res[0])
+            rs = graph.run(cql).to_ndarray()
+            if len(rs) > 0:
+                cql_tree = "match (n)-[r:is]->(m) where id(m)=%s return m,type(r),n" % (rs[0][0])
+                path = "match (n)-[r:is]->(m) where id(m)=%s return m,type(r),n,id(n),n.out_node" % (rs[0][0])
+                card["std_vocab"] = str(rs[0][1])
+        elif "标准词" in res[1]:
+            cql_tree = "match (n)<-[r:is]-(m) where id(n)=%s return n,type(r),m" % (res[0])
+            path = "match (n)<-[r:belong_to]-(m) where id(n)=%s return n,type(r),m,id(m),m.out_node" % (res[0])
+            card["std_vocab"] = res[2]
+        rst = graph.run(path).to_ndarray()
+        tree = graph.run(cql_tree).to_ndarray()
+        if "" != path and len(rst) > 0:
+            path = query_path([],rst,prj_label)#返回路径
+            card["path"] = path
+        else:
+            card["path"] = []
+        if "" != tree and len(tree) > 0:
+            tree = tree_info(rst, prj_label)  # 返回归一树信息
+            card["syn_vocab"] = [tr["name"] for tr in tree["nodes"]]
+            card["syn_vocab"].remove(res[2])
+            card["graph"] = tree
+        else:
+            tree = {}  # 按树结构只返回一个节点
+            tree["nodes"] = [node_info(res[0], prj_label)]
+            tree["rels"] = []
+            card["syn_vocab"] = []
+            card["graph"] = tree
+
+    return card
 
 
 
@@ -305,5 +367,6 @@ if __name__ == "__main__":
     #
     # trees = simplejson.dumps(trees,ensure_ascii=False)
     # print(trees)
-    node = select_node(8738349,'PJ1dacfe724fc411ebb771fa163eac98f2')
-    print(node)
+    node = select_node(8739524,'PJ1dacfe724fc411ebb771fa163eac98f2')
+    trees = simplejson.dumps(node,ensure_ascii=False)
+    print(trees)
