@@ -293,14 +293,11 @@ def select_node(node_id,prj_label):
             rs = graph.run(cql).to_ndarray()
             if len(rs) > 0:
                 cql_tree = "match (n)-[r:is]->(m) where id(m)=%s return m,type(r),n" % (rs[0][0])
-                path = "match (n)-[r:is]->(m) where id(m)=%s return m,type(r),n,id(n),n.out_node" % (rs[0][0])
                 card["std_vocab"] = str(rs[0][1])
         elif "标准词" in res[1]:
             cql_tree = "match (n)<-[r:is]-(m) where id(n)=%s return n,type(r),m" % (res[0])
-            path = "match (n)<-[r:belong_to]-(m) where id(n)=%s return n,type(r),m,id(m),m.out_node" % (res[0])
             graphs = "match (n)<-[r]-(m) where id(n)=%s return m,type(r),n"% (res[0])  # 节点下级数据
             card["std_vocab"] = res[2]
-        # rst = graph.run(path).to_ndarray() # 路径
         tree = graph.run(cql_tree).to_ndarray() # 同义词
         graphss = graph.run(graphs).to_ndarray() # 图谱数
         # if "" != graphs and len(graphss) > 0:
