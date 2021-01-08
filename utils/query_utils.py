@@ -255,7 +255,7 @@ def query_normalize_detail(prj_label,prj_name,area,name,node_id):
         cards.append(copy.deepcopy(card))
     return cards
 
-#根据查询结果返回树结构信息 20200107
+#获取节点路径api 20200107
 def query_path(arr,node_id,node_name,prj_label):
     arr.append(node_name)
     path = "match (n)-[r]->(m) where id(n)=%s return id(m),m.name" %(node_id)
@@ -312,6 +312,10 @@ def select_node(node_id,prj_label):
             card["syn_vocab"] = []
 
     return card
+
+#获取节点与之相连的数  20200108 todo
+
+
 
 
 #根据查询结果返回树结构信息 20210107
