@@ -4,7 +4,7 @@ from pandas import DataFrame
 import pandas as pd
 import os
 
-graph = Graph("bolt://120.221.160.120:19442", username="neo4j", password="123456")
+graph = Graph("bolt://120.221.160.106:8002", username="neo4j", password="123456")
 
 #复制项目
 def copy_prj(prj_old,prj_new,import_dir):

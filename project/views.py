@@ -1,7 +1,7 @@
 from django.http import JsonResponse, HttpRequest
 from knowledge_graph import settings
 from .models import Project,Field
-from utils import time_utils,common_utils,import_utils,query_utils
+from utils import time_utils,common_utils,import_utils,query_utils,copy_utils
 from django.db.models import Q
 import os
 import simplejson
@@ -284,7 +284,7 @@ def queryProjectConceptInfo(request):
         print(e)
         return JsonResponse({'result':'failure'})
 
-# 项目聚焦图谱数据聚焦
+# 项目聚焦图谱数据聚焦 todo
 def focusProjectConceptInfo(request):
     try:
         # 获取参数
@@ -297,7 +297,19 @@ def focusProjectConceptInfo(request):
         print(e)
         return JsonResponse({'result':'failure'})
 
-
+# 复制项目图谱数据
+def copy(request):
+    try:
+        # 获取参数
+        # old项目 new项目 路径
+        newId = request.GET.get("new_project_id")
+        oldId = request.GET.get("old_project_id")
+        path = settings.IMPORT_DIR
+        copy_utils.copy_prj(oldId,newId,path)
+        return JsonResponse({'result': 'success'})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'result':'failure'})
 
 
 

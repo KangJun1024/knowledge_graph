@@ -8,6 +8,7 @@ urlpatterns = [
     path('project/queryConcept/', views.queryConcept), #归一应用查询图谱关联列表数据
     path('project/queryConceptInfo/', views.queryConceptInfo), #归一应用查询图谱详情
     path('project/create/', views.create), #创建项目
+    path('project/copy/', views.copy), #复制项目
     path('project/delete/', views.delete), #删除项目
     path('project/detail/', views.detail), #项目详情
     path('project/update/', views.update), #项目修改
