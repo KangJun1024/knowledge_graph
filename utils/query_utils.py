@@ -264,7 +264,7 @@ def query_path(arr,node_id,node_name,prj_label):
         query_path(arr,result[0][0],result[0][1],prj_label)
 
 
-#通过节点id node_id获取节点 选中/聚焦数据
+#通过节点id node_id获取节点 选中
 def select_node(node_id,prj_label):
     """
     项目选中图谱  概念名 路径 标准词 同义词 图谱数据
@@ -281,12 +281,10 @@ def select_node(node_id,prj_label):
         card["node_id"] = res[0]
         card["node_name"] = res[2]
         card["std_vocab"] = "" # 标准词
-        card["syn_vocab"] = [] # 同义词  ?
+        card["syn_vocab"] = [] # 同义词
         card["path"] = [] # 路径
-        card["graph"] = {} # 选中数  ?
         cql_tree = "" # 同义词
         graphs = "" # 图谱数
-        path = "" # 路径
         # 原始词和标准词区分
         if "原始词" in res[1]:
             cql = "match (n)-[r:is]->(m) where id(n)=%s return id(m),m.name" % (res[0])
@@ -307,16 +305,15 @@ def select_node(node_id,prj_label):
         query_path(arr,node_id,res[2],prj_label)#返回路径
         card["path"] = arr
 
-        # if "" != cql_tree and len(tree) > 0:
-        #     print('===========',cql_tree)
-        #     tree = select_tree_info(rst, prj_label)  # 返回归一树信息
-        #     card["syn_vocab"] = [tr["name"] for tr in tree["nodes"]]
-        #     card["syn_vocab"].remove(res[2])
-        # else:
-        #     tree = {}  # 按树结构只返回一个节点
-        #     tree["nodes"] = [node_info(res[0], prj_label)]
-        #     tree["rels"] = []
-        #     card["syn_vocab"] = []
+        if "" != cql_tree and len(tree) > 0:
+            tree = select_tree_info(tree, prj_label)  # 返回归一树信息
+            card["syn_vocab"] = [tr["name"] for tr in tree["nodes"]]
+            card["syn_vocab"].remove(res[2])
+        else:
+            tree = {}  # 按树结构只返回一个节点
+            tree["nodes"] = [node_info(res[0], prj_label)]
+            tree["rels"] = []
+            card["syn_vocab"] = []
 
     return card
 
@@ -405,7 +402,7 @@ if __name__ == "__main__":
     #
     # trees = simplejson.dumps(trees,ensure_ascii=False)
     # print(trees)
-    node = select_node(8360647,'PJ1dacfe724fc411ebb771fa163eac98f2')
+    node = select_node(8540670,'PJ1dacfe724fc411ebb771fa163eac98f2')
     trees = simplejson.dumps(node,ensure_ascii=False)
     print(trees)
     # arr = []
