@@ -297,10 +297,6 @@ def select_node(node_id,prj_label):
             graphs = "match (n)<-[r]-(m) where id(n)=%s return m,type(r),n"% (res[0])  # 节点下级数据
             card["std_vocab"] = res[2]
         tree = graph.run(cql_tree).to_ndarray() # 同义词
-        graphss = graph.run(graphs).to_ndarray() # 图谱数
-        # if "" != graphs and len(graphss) > 0:
-        #     graphs = select_tree_info(graphss, prj_label)
-        #     card["graph"] = graphs
         arr = []
         query_path(arr,node_id,res[2],prj_label)#返回路径
         card["path"] = arr
