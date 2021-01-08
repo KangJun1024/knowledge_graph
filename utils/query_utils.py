@@ -256,19 +256,12 @@ def query_normalize_detail(prj_label,prj_name,area,name,node_id):
     return cards
 
 #根据查询结果返回树结构信息 20200107
-def query_path(arr,result,prj_label):
-    if result is not None:
-        if result[0][4] is not None and result[0][0]['out_node'] != '':
-            arr.append(result[0][0]['name'])
-        else:
-            arr.append(result[0][0]['name'])
-            return arr
-    # 递归获取上级节点
-    if len(result) > 0:
-        cql_tree = "match (n:%s)-[r]->(m) where id(n)=%s return m,type(r),n,id(n),n.out_node" % (prj_label,result[0][4])
-        rst = graph.run(cql_tree).to_ndarray()
-        query_path(arr,rst, prj_label)
-    return arr
+def query_path(arr,node_id,node_name,prj_label):
+    arr.append(node_name)
+    path = "match (n)-[r]->(m) where id(n)=%s return id(m),m.name" %(node_id)
+    result = graph.run(path).to_ndarray()
+    if result is not None and len(result) > 0:
+        query_path(arr,result[0][0],result[0][1],prj_label)
 
 
 #通过节点id node_id获取节点 选中/聚焦数据
@@ -291,8 +284,9 @@ def select_node(node_id,prj_label):
         card["syn_vocab"] = [] # 同义词  ?
         card["path"] = [] # 路径
         card["graph"] = {} # 选中数  ?
-        cql_tree = ""
-        path = ""
+        cql_tree = "" # 同义词
+        graphs = "" # 图谱数
+        path = "" # 路径
         # 原始词和标准词区分
         if "原始词" in res[1]:
             cql = "match (n)-[r:is]->(m) where id(n)=%s return id(m),m.name" % (res[0])
@@ -304,27 +298,74 @@ def select_node(node_id,prj_label):
         elif "标准词" in res[1]:
             cql_tree = "match (n)<-[r:is]-(m) where id(n)=%s return n,type(r),m" % (res[0])
             path = "match (n)<-[r:belong_to]-(m) where id(n)=%s return n,type(r),m,id(m),m.out_node" % (res[0])
+            graphs = "match (n)<-[r]-(m) where id(n)=%s return m,type(r),n"% (res[0])  # 节点下级数据
             card["std_vocab"] = res[2]
-        rst = graph.run(path).to_ndarray()
-        tree = graph.run(cql_tree).to_ndarray()
-        if "" != path and len(rst) > 0:
-            path = query_path([],rst,prj_label)#返回路径
-            card["path"] = path
-        else:
-            card["path"] = []
-        if "" != tree and len(tree) > 0:
-            tree = tree_info(rst, prj_label)  # 返回归一树信息
-            card["syn_vocab"] = [tr["name"] for tr in tree["nodes"]]
-            card["syn_vocab"].remove(res[2])
-            card["graph"] = tree
-        else:
-            tree = {}  # 按树结构只返回一个节点
-            tree["nodes"] = [node_info(res[0], prj_label)]
-            tree["rels"] = []
-            card["syn_vocab"] = []
-            card["graph"] = tree
+        # rst = graph.run(path).to_ndarray() # 路径
+        tree = graph.run(cql_tree).to_ndarray() # 同义词
+        graphss = graph.run(graphs).to_ndarray() # 图谱数
+        # if "" != graphs and len(graphss) > 0:
+        #     graphs = select_tree_info(graphss, prj_label)
+        #     card["graph"] = graphs
+        arr = []
+        query_path(arr,node_id,res[2],prj_label)#返回路径
+        card["path"] = arr
+
+        # if "" != cql_tree and len(tree) > 0:
+        #     print('===========',cql_tree)
+        #     tree = select_tree_info(rst, prj_label)  # 返回归一树信息
+        #     card["syn_vocab"] = [tr["name"] for tr in tree["nodes"]]
+        #     card["syn_vocab"].remove(res[2])
+        # else:
+        #     tree = {}  # 按树结构只返回一个节点
+        #     tree["nodes"] = [node_info(res[0], prj_label)]
+        #     tree["rels"] = []
+        #     card["syn_vocab"] = []
 
     return card
+
+
+#根据查询结果返回树结构信息 20210107
+def select_tree_info(result,prj_label):
+    if len(result[0]) == 5: #三层结构
+        r_index = [1,3]
+        n_index = [0,2,4]
+    elif len(result[0]) == 3: #两层结构
+        r_index = [1]
+        n_index = [0,2]
+    tree = {}
+    nodes = []
+    rels = []
+    for res in result:
+        #获取关系
+        for r in r_index:
+            rel_info = {}
+            rel_info["name"] = res[r]
+            rel_info["source"] = str(res[r+1].identity)
+            rel_info["target"] = str(res[r-1].identity)
+            rels.append(copy.deepcopy(rel_info))
+        #获取节点
+        for i in n_index:
+            node_info = {}
+            node_info["id"] = res[i].identity
+            node_info["labels"] = list(res[i].labels)
+            node_info["labels"].remove(prj_label)
+            properties = {}
+            for k,v in res[i].items(): #遍历属性，排除非业务字段
+                if k == "name":
+                    node_info[k] = v
+                elif k  not in ['uid','delete_flag','in_node','out_node']:
+                    properties[k] = v
+            node_info["properties"] = properties
+            nodes.append(copy.deepcopy(node_info))
+    tree["nodes"] = drop_dupls(nodes)
+    tree["rels"] = drop_dupls(rels)
+    return tree
+
+
+
+
+
+
 
 
 
@@ -367,6 +408,9 @@ if __name__ == "__main__":
     #
     # trees = simplejson.dumps(trees,ensure_ascii=False)
     # print(trees)
-    node = select_node(8739524,'PJ1dacfe724fc411ebb771fa163eac98f2')
+    node = select_node(8360647,'PJ1dacfe724fc411ebb771fa163eac98f2')
     trees = simplejson.dumps(node,ensure_ascii=False)
     print(trees)
+    # arr = []
+    # query_path(arr,8360647,"test",'PJ1dacfe724fc411ebb771fa163eac98f2')
+    # print(arr)
