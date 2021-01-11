@@ -18,7 +18,7 @@ def load_csv(labels,head):
     ori_head = head["原始词"]
     ori_pro = ",".join('%s:line[%s]' % (re.findall("[[](.*?)[]]", ori_head[i])[0], i + 1) for i in range(len(ori_head)))
     ori_label = ":".join(l for l in labels.split(",") + ["原始词"])
-    ori_cypher = 'USING PERIODIC COMMIT 5000 LOAD CSV FROM "%s" AS line create (m:%s{uid:line[0],%s,in_node:"",out_node:"",delete_flag:0})' % (
+    ori_cypher = 'USING PERIODIC COMMIT 5000 LOAD CSV FROM "%s" AS line create (m:%s{uid:line[0],%s,delete_flag:0})' % (
     "file:///" + labels + "/ori_vocab.csv", ori_label, ori_pro)
     print(ori_cypher)
     graph.run(ori_cypher)
@@ -27,7 +27,7 @@ def load_csv(labels,head):
     std_head = head["标准词"]
     std_pro = ",".join('%s:line[%s]' % (re.findall("[[](.*?)[]]", std_head[i])[0], i + 1) for i in range(len(std_head)))
     std_label = ":".join(l for l in labels.split(",") + ["标准词"])
-    std_cypher = 'USING PERIODIC COMMIT 5000 LOAD CSV FROM "%s" AS line create (n:%s{uid:line[0],%s,in_node:"",out_node:"",delete_flag:0})' % (
+    std_cypher = 'USING PERIODIC COMMIT 5000 LOAD CSV FROM "%s" AS line create (n:%s{uid:line[0],%s,delete_flag:0})' % (
     "file:///" + labels + "/std_vocab.csv", std_label, std_pro)
     print(std_cypher)
     graph.run(std_cypher)
@@ -55,9 +55,9 @@ def load_csv(labels,head):
     graph.run(belong_cypher)
     print(get_localtime() + "创建分类关系完成！")
     # 更新相对路径(多路径问题未解决？)
-    path_cypher = 'match(n)-[r]->(m) set n.out_node=id(m),m.in_node=id(n)'
-    graph.run(path_cypher)
-    print(get_localtime() + "更新相对路径完成！")
+    # path_cypher = 'match(n)-[r]->(m) set n.out_node=id(m),m.in_node=id(n)'
+    # graph.run(path_cypher)
+    # print(get_localtime() + "更新相对路径完成！")
 
 
 def excel_to_csv(excel_path):
