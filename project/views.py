@@ -284,14 +284,14 @@ def queryProjectConceptInfo(request):
         print(e)
         return JsonResponse({'result':'failure'})
 
-# 项目聚焦图谱数据聚焦 todo
+# 项目聚焦图谱数据聚焦
 def focusProjectConceptInfo(request):
     try:
         # 获取参数
         # 项目 概念
         nodeId = request.GET.get("node_id")
         projectId = request.GET.get("project_id")
-        data = query_utils.select_node(nodeId,projectId)
+        data = query_utils.focus_node(nodeId,projectId)
         return JsonResponse({'result': 'success','data':data})
     except Exception as e:
         print(e)

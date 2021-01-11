@@ -2,7 +2,6 @@
 
 from py2neo import Graph
 import copy
-#import simplejson
 
 graph = Graph("bolt://120.221.160.106:8002", username="neo4j", password="123456")
 
@@ -311,7 +310,7 @@ def select_node(node_id,prj_label):
 def get_node_tree(node_id,prj_label):
     tree = {}
     tree_in = {}
-    tree_out = ()
+    tree_out = {}
     cql_tree_in = "match (n)-[r]->(m) where id(m)=%s return m,type(r),n" %(node_id)
     rs_in = graph.run(cql_tree_in).to_ndarray()
     if len(rs_in) > 0:
