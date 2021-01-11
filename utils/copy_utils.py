@@ -34,8 +34,8 @@ def get_pro(prj_id):
     for res in result:
         pro_std = pro_std | set(list(res.values())[0])   
     #去除非业务字段
-    pro_ori = pro_ori - {"in_node","out_node","delete_flag"}
-    pro_std = pro_std - {"in_node","out_node","delete_flag"}
+    pro_ori = pro_ori - {"delete_flag"}
+    pro_std = pro_std - {"delete_flag"}
     #返回dict
     pro["原始词"] = list(pro_ori)
     pro["标准词"] = list(pro_std)
@@ -80,7 +80,7 @@ def load_csv(prj_id,pro):
     ori_head = pro["原始词"]
     ori_pro = ",".join('%s:line[%s]' % (ori_head[i], i) for i in range(len(ori_head)))
     ori_label =  prj_id + ":原始词"
-    ori_cypher = 'USING PERIODIC COMMIT 5000 LOAD CSV FROM "%s" AS line create (m:%s{%s,in_node:"",out_node:"",delete_flag:0})' % (
+    ori_cypher = 'USING PERIODIC COMMIT 5000 LOAD CSV FROM "%s" AS line create (m:%s{%s,delete_flag:0})' % (
     "file:///" + prj_id + "/ori_vocab.csv", ori_label, ori_pro)
     print(ori_cypher)
     graph.run(ori_cypher)
@@ -89,7 +89,7 @@ def load_csv(prj_id,pro):
     std_head = pro["标准词"]
     std_pro = ",".join('%s:line[%s]' % (std_head[i], i) for i in range(len(std_head)))
     std_label = prj_id + ":标准词"
-    std_cypher = 'USING PERIODIC COMMIT 5000 LOAD CSV FROM "%s" AS line create (n:%s{%s,in_node:"",out_node:"",delete_flag:0})' % (
+    std_cypher = 'USING PERIODIC COMMIT 5000 LOAD CSV FROM "%s" AS line create (n:%s{%s,delete_flag:0})' % (
     "file:///" + prj_id + "/std_vocab.csv", std_label, std_pro)
     print(std_cypher)
     graph.run(std_cypher)
@@ -117,9 +117,9 @@ def load_csv(prj_id,pro):
     graph.run(belong_cypher)
     print( "创建分类关系完成！")
     # 更新相对路径(多路径问题未解决？)
-    path_cypher = 'match(n)-[r]->(m) set n.out_node=id(m),m.in_node=id(n)'
-    graph.run(path_cypher)
-    print( "更新相对路径完成！")
+    # path_cypher = 'match(n)-[r]->(m) set n.out_node=id(m),m.in_node=id(n)'
+    # graph.run(path_cypher)
+    # print( "更新相对路径完成！")
 
 
 
