@@ -3,7 +3,8 @@
 from py2neo import Graph
 import copy
 
-graph = Graph("bolt://120.221.160.106:8002", username="neo4j", password="123456")
+# graph = Graph("bolt://120.221.160.106:8002", username="neo4j", password="123456")
+graph = Graph("bolt://127.0.0.1:8002", username="neo4j", password="123456")
 
 #获取概念或三元组数量
 def get_nd_rel_ct(labels:list,type:int):
