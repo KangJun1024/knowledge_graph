@@ -14,5 +14,6 @@ urlpatterns = [
     path('project/update/', views.update), #项目修改
     path('project/fieldList/', views.fieldList), #领域列表
     path('project/queryProjectConceptInfo/',views.queryProjectConceptInfo),  #项目选中
-    path('project/focusProjectConceptInfo/',views.focusProjectConceptInfo)  #项目聚焦 需要返回图谱数据
+    path('project/focusProjectConceptInfo/',views.focusProjectConceptInfo),  #项目聚焦 需要返回图谱数据
+    path('project/selectProjectConceptInfo/',views.selectProjectConceptInfo)  #项目搜索 需要返回图谱数据
 ]

@@ -2,6 +2,7 @@
 
 from py2neo import Graph
 import copy
+import simplejson
 
 # graph = Graph("bolt://120.221.160.106:8002", username="neo4j", password="123456")
 graph = Graph("bolt://127.0.0.1:8002", username="neo4j", password="123456")
@@ -330,6 +331,11 @@ def focus_node(node_id,prj_label):
     node_tree = get_node_tree(node_id,prj_label)
     return dict(node_info, **node_tree)
 
+#项目谱图查询功能
+def query_node(node_name,prj_label):
+    node_info = select_node_name(node_name, prj_label)
+    node_tree = get_node_tree_name(node_name, prj_label)
+    return dict(node_info, **node_tree)
 
 #根据查询结果返回树结构信息 20210107
 def select_tree_info(result,prj_label):
@@ -368,13 +374,56 @@ def select_tree_info(result,prj_label):
     tree["rels"] = drop_dupls(rels)
     return tree
 
+#通过节点名称获取节点信息
+def select_node_name(name,prj_label):
+    cql = "match (n:%s) where n.name='%s' return id(n),labels(n)" % (prj_label, name)
+    result = graph.run(cql).to_ndarray()
+    card = {}
+    for res in result:
+        card["node_id"] = res[0]
+        card["node_name"] = name
+        card["std_vocab"] = ""  # 标准词
+        card["syn_vocab"] = []  # 同义词
+        card["path"] = []  # 路径
+        cql_tree = ""  # 同义词
+        # 获取同义词和标准词
+        if "原始词" in res[1]:
+            cql = "match (n)-[r:is]->(m) where id(n)=%s return id(m),m.name" % (res[0])
+            rs = graph.run(cql).to_ndarray()
+            if len(rs) > 0:
+                cql_tree = "match (n)-[r:is]->(m) where id(m)=%s return m.name,n.name" % (rs[0][0])
+                card["std_vocab"] = str(rs[0][1])
+        elif "标准词" in res[1]:
+            cql_tree = "match (n)<-[r:is]-(m) where id(n)=%s return n.name,m.name" % (res[0])
+            card["std_vocab"] = name
+        rst = graph.run(cql_tree).to_ndarray()  # 同义词
+        if "" != cql_tree and len(rst) > 0:
+            set1 = set(rr[0] for rr in rst)
+            set2 = set1 | set(rr[1] for rr in rst)
+            card["syn_vocab"] = list(set2)
+            card["syn_vocab"].remove(res[2])
+        # 节点路径
+        arr = []
+        query_path(arr, res[0], name, prj_label)
+        card["path"] = arr
+    return card
 
-
-
-
-
-
-
+#获取节点名称与之相连的树
+def get_node_tree_name(name,prj_label):
+    tree = {}
+    tree_in = {}
+    tree_out = {}
+    cql_tree_in = "match (n:%s)-[r]->(m) where m.name='%s' return m,type(r),n" %(prj_label,name)
+    rs_in = graph.run(cql_tree_in).to_ndarray()
+    if len(rs_in) > 0:
+        tree_in = select_tree_info(rs_in, prj_label)
+    cql_tree_out = "match (n:%s)-[r]->(m) where n.name='%s' return m,type(r),n" %(prj_label,name)
+    rs_out = graph.run(cql_tree_out).to_ndarray()
+    if len(rs_out) > 0:
+        tree_out = select_tree_info(rs_out, prj_label)
+    tree["nodes"] = drop_dupls(tree_in["nodes"] + tree_out["nodes"])
+    tree["rels"] = drop_dupls(tree_in["rels"] + tree_out["rels"])
+    return tree
 
 
 
@@ -399,9 +448,10 @@ if __name__ == "__main__":
     # trees = simplejson.dumps(trees,ensure_ascii=False)
     # print(trees)
     #node = select_node(8540670,'PJ1dacfe724fc411ebb771fa163eac98f2')
-    tree = focus_node(8540670,'PJ1dacfe724fc411ebb771fa163eac98f2')
-    #trees = simplejson.dumps(node,ensure_ascii=False)
-    print(tree)
+    # tree = focus_node(8540670,'PJ1dacfe724fc411ebb771fa163eac98f2')
+    tree = query_node('某些传染病和寄生虫病9740','PJ1dacfe724fc411ebb771fa163eac98f2')
+    trees = simplejson.dumps(tree,ensure_ascii=False)
+    print(trees)
     # arr = []
     # query_path(arr,8360647,"test",'PJ1dacfe724fc411ebb771fa163eac98f2')
     # print(arr)

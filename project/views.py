@@ -311,8 +311,18 @@ def copy(request):
         print(e)
         return JsonResponse({'result':'failure'})
 
-
-
+# 项目搜索图谱
+def selectProjectConceptInfo(request):
+    try:
+        # 获取参数
+        # 项目 概念
+        projectId = request.GET.get("project_id")
+        conceptName = request.GET.get("concept_name")
+        tree = query_utils.query_node(conceptName,projectId)
+        return JsonResponse({'result': 'success','data':tree})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'result':'failure'})
 
 
 
