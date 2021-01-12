@@ -69,6 +69,9 @@ def prj_to_csv(prj_id,pro,out_dir):
     belong_rel = DataFrame(result)
     #输出到csv
     print("输出结果到csv...")
+    #创建新项目文件夹
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
     ori_vocab.to_csv(os.path.join(out_dir, "ori_vocab.csv"), header=None, index=None)
     std_vocab.to_csv(os.path.join(out_dir, "std_vocab.csv"), header=None, index=None)
     is_rel.to_csv(os.path.join(out_dir, "is_rel.csv"), header=None, index=None)
