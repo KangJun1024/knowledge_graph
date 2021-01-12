@@ -334,8 +334,7 @@ def focus_node(node_id,prj_label):
 #项目谱图查询功能
 def query_node(node_name,prj_label):
     node_info = select_node_name(node_name, prj_label)
-    node_tree = get_node_tree_name(node_name, prj_label)
-    return dict(node_info, **node_tree)
+    return node_info
 
 #根据查询结果返回树结构信息 20210107
 def select_tree_info(result,prj_label):
@@ -376,15 +375,23 @@ def select_tree_info(result,prj_label):
 
 #通过节点名称获取节点信息
 def select_node_name(name,prj_label):
-    cql = "match (n:%s) where n.name='%s' return id(n),labels(n)" % (prj_label, name)
+    cql = "match (n:%s) where n.name='%s' return id(n),labels(n),n" % (prj_label, name)
     result = graph.run(cql).to_ndarray()
-    card = {}
+    cards = []
     for res in result:
+        card = {}
         card["node_id"] = res[0]
         card["node_name"] = name
         card["std_vocab"] = ""  # 标准词
         card["syn_vocab"] = []  # 同义词
         card["path"] = []  # 路径
+        card["properties"] = {} # 属性
+        # 通过节点获取属性
+        properties = {}
+        for k, v in res[2].items():  # 遍历属性，排除非业务字段
+            if k not in ['uid', 'delete_flag', 'in_node', 'out_node']:
+                properties[k] = v
+        card["properties"] = properties
         cql_tree = ""  # 同义词
         # 获取同义词和标准词
         if "原始词" in res[1]:
@@ -406,7 +413,8 @@ def select_node_name(name,prj_label):
         arr = []
         query_path(arr, res[0], name, prj_label)
         card["path"] = arr
-    return card
+        cards.append(copy.deepcopy(card))
+    return cards
 
 #获取节点名称与之相连的树
 def get_node_tree_name(name,prj_label):
