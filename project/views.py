@@ -307,11 +307,11 @@ def copy(request):
         path = settings.IMPORT_DIR
         copy_utils.copy_prj(oldId,newId,path)
         # 修改项目状态
-        updateStatus(project_id, 3)
+        updateStatus(newId, 3)
         return JsonResponse({'result': 'success'})
     except Exception as e:
         print(e)
-        updateStatus(project_id, 2)
+        updateStatus(newId, 2)
         return JsonResponse({'result':'failure'})
 
 # 项目搜索图谱
