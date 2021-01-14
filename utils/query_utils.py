@@ -277,6 +277,7 @@ def select_node(node_id,prj_label):
     """
     # 查询节点类型
     cql = "match (n:%s) where id(n)=%s return id(n),labels(n),n.name" % (prj_label,node_id)
+    print(cql)
     result = graph.run(cql).to_ndarray()
     card = {}
     for res in result:
@@ -322,6 +323,14 @@ def get_node_tree(node_id,prj_label):
     rs_out = graph.run(cql_tree_out).to_ndarray()
     if len(rs_out) > 0:
         tree_out = select_tree_info(rs_out, prj_label)
+    if not tree_in:
+        tree_in["nodes"] = []
+        tree_in["rels"] = []
+    if not tree_out:
+        tree_out["nodes"] = []
+        tree_out["rels"] = []
+    print(tree_in)
+    print(tree_out)
     tree["nodes"] = drop_dupls(tree_in["nodes"] + tree_out["nodes"])
     tree["rels"] = drop_dupls(tree_in["rels"] + tree_out["rels"])
     return tree
@@ -458,19 +467,19 @@ if __name__ == "__main__":
     # trees = simplejson.dumps(trees,ensure_ascii=False)
     # print(trees)
     #node = select_node(8540670,'PJ1dacfe724fc411ebb771fa163eac98f2')
-    # tree = focus_node(8540670,'PJ1dacfe724fc411ebb771fa163eac98f2')
+    tree = focus_node(13088347,'PJ3fcccf80556611ebac42fa163eac98f2')
     # tree = query_node('某些传染病和寄生虫病9740','PJ1dacfe724fc411ebb771fa163eac98f2')
-    # trees = simplejson.dumps(tree,ensure_ascii=False)
-    # print(trees)
+    trees = simplejson.dumps(tree,ensure_ascii=False)
+    print(trees)
     # aList = [123, 'xyz', 'zara', 'abc', 'xyz']
     #
     # aList.reverse()
     # print("List : ", aList)
 
-    arr = []
-
-    arr.reverse()
-    print(arr)
+    # arr = []
+    #
+    # arr.reverse()
+    # print(arr)
 
     # query_path(arr,8360647,"test",'PJ1dacfe724fc411ebb771fa163eac98f2')
     # print(arr)
