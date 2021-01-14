@@ -305,7 +305,7 @@ def select_node(node_id,prj_label):
         #节点路径
         arr = []
         query_path(arr,node_id,res[2],prj_label)
-        card["path"] = arr
+        card["path"] = arr.reverse()
     return card
 
 #获取节点与之相连的树
@@ -412,7 +412,7 @@ def select_node_name(name,prj_label):
         # 节点路径
         arr = []
         query_path(arr, res[0], name, prj_label)
-        card["path"] = arr
+        card["path"] = arr.reverse()
         cards.append(copy.deepcopy(card))
     return cards
 
