@@ -305,7 +305,8 @@ def select_node(node_id,prj_label):
         #节点路径
         arr = []
         query_path(arr,node_id,res[2],prj_label)
-        card["path"] = arr.reverse()
+        arr.reverse()
+        card["path"] = arr
     return card
 
 #获取节点与之相连的树
@@ -412,7 +413,8 @@ def select_node_name(name,prj_label):
         # 节点路径
         arr = []
         query_path(arr, res[0], name, prj_label)
-        card["path"] = arr.reverse()
+        arr.reverse()
+        card["path"] = arr
         cards.append(copy.deepcopy(card))
     return cards
 
@@ -457,10 +459,19 @@ if __name__ == "__main__":
     # print(trees)
     #node = select_node(8540670,'PJ1dacfe724fc411ebb771fa163eac98f2')
     # tree = focus_node(8540670,'PJ1dacfe724fc411ebb771fa163eac98f2')
-    tree = query_node('某些传染病和寄生虫病9740','PJ1dacfe724fc411ebb771fa163eac98f2')
-    trees = simplejson.dumps(tree,ensure_ascii=False)
-    print(trees)
-    # arr = []
+    # tree = query_node('某些传染病和寄生虫病9740','PJ1dacfe724fc411ebb771fa163eac98f2')
+    # trees = simplejson.dumps(tree,ensure_ascii=False)
+    # print(trees)
+    # aList = [123, 'xyz', 'zara', 'abc', 'xyz']
+    #
+    # aList.reverse()
+    # print("List : ", aList)
+
+    arr = []
+
+    arr.reverse()
+    print(arr)
+
     # query_path(arr,8360647,"test",'PJ1dacfe724fc411ebb771fa163eac98f2')
     # print(arr)
 
