@@ -276,7 +276,7 @@ def select_node(node_id,prj_label):
     :return:
     """
     # 查询节点类型
-    cql = "match (n:%s) where id(n)=%s return id(n),labels(n),n.name" % (prj_label,node_id)
+    cql = "match (n:%s) where id(n)=%s return id(n),labels(n),n.name,n" % (prj_label,node_id)
     print(cql)
     result = graph.run(cql).to_ndarray()
     card = {}
@@ -286,6 +286,13 @@ def select_node(node_id,prj_label):
         card["std_vocab"] = "" # 标准词
         card["syn_vocab"] = [] # 同义词
         card["path"] = [] # 路径
+        card["properties"] = {}  # 属性
+        # 通过节点获取属性
+        properties = {}
+        for k, v in res[3].items():  # 遍历属性，排除非业务字段
+            if k not in ['uid', 'delete_flag', 'in_node', 'out_node']:
+                properties[k] = v
+        card["properties"] = properties
         cql_tree = "" # 同义词
         # 获取同义词和标准词
         if "原始词" in res[1]:
@@ -297,7 +304,8 @@ def select_node(node_id,prj_label):
         elif "标准词" in res[1]:
             cql_tree = "match (n)<-[r:is]-(m) where id(n)=%s return n.name,m.name" % (res[0])           
             card["std_vocab"] = res[2]
-        rst = graph.run(cql_tree).to_ndarray() # 同义词        
+        rst = graph.run(cql_tree).to_ndarray() # 同义词
+        print(cql_tree)
         if "" != cql_tree and len(rst) > 0:
             set1 = set(rr[0] for rr in rst)
             set2 = set1 | set(rr[1] for rr in rst)
@@ -414,11 +422,12 @@ def select_node_name(name,prj_label):
             cql_tree = "match (n)<-[r:is]-(m) where id(n)=%s return n.name,m.name" % (res[0])
             card["std_vocab"] = name
         rst = graph.run(cql_tree).to_ndarray()  # 同义词
+        print(cql_tree)
         if "" != cql_tree and len(rst) > 0:
             set1 = set(rr[0] for rr in rst)
             set2 = set1 | set(rr[1] for rr in rst)
             card["syn_vocab"] = list(set2)
-            card["syn_vocab"].remove(res[2])
+            card["syn_vocab"].remove(name)
         # 节点路径
         arr = []
         query_path(arr, res[0], name, prj_label)
