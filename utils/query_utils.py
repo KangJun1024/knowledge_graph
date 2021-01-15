@@ -217,7 +217,7 @@ def query_normalize_detail(prj_label,prj_name,area,name,node_id):
     """
     某项目，某领域的归一查询
     """
-    cql = "match (n:%s) where n.name='%s' and id(n)=%s return id(n),labels(n)"%(prj_label,name,node_id)
+    cql = "match (n:%s) where n.name='%s' and id(n)=%s return id(n),labels(n),n"%(prj_label,name,node_id)
     print(cql)
     result = graph.run(cql).to_ndarray()
     print(result)
@@ -232,6 +232,13 @@ def query_normalize_detail(prj_label,prj_name,area,name,node_id):
         card["std_vocab"] = ""
         card["syn_vocab"] = []
         card["graph"] = {}
+        card["properties"] = {}  # 属性
+        # 通过节点获取属性
+        properties = {}
+        for k, v in res[2].items():  # 遍历属性，排除非业务字段
+            if k not in ['uid', 'delete_flag', 'in_node', 'out_node']:
+                properties[k] = v
+        card["properties"] = properties
         cql_tree = ""
         if "原始词" in res[1]:
             cql = "match (n)-[r:is]->(m) where id(n)=%s return id(m),m.name"%(res[0])
