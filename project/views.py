@@ -328,14 +328,24 @@ def selectProjectConceptInfo(request):
         return JsonResponse({'result':'failure'})
 
 #  通过项目名称获取项目并修改项目图谱地址
-def updatePhoto(id,photo):
+def updatePhoto(request):
     # 获取参数
-    base_query = Project.objects
-    obj = base_query.filter(project_id=id).first()
-    if not obj:
-        return JsonResponse({'result': 'failure', 'message': '项目不存在'})
-    obj.project_photo = photo
-    obj.update_time = time_utils.now()
-    obj.save()
-    return JsonResponse({'result': 'success'})
-
+    print(request.body)
+    if request.method == 'POST':
+        try:
+            payload = simplejson.loads(request.body)
+            access_logger.info(payload)
+            # 校验项目名称 + 组织编码
+            id = payload['id']
+            photo = payload['photo']
+            base_query = Project.objects
+            project = base_query.filter(id=id).first()
+            if not project:
+                return JsonResponse({'result': 'failure', 'message': '项目不存在'})
+            project.project_photo = photo
+            project.update_time = time_utils.now()
+            project.save()
+            return JsonResponse({'result': 'success'})
+        except Exception as e:
+            print(e)
+            return JsonResponse({'result': 'failure'})
