@@ -327,5 +327,15 @@ def selectProjectConceptInfo(request):
         print(e)
         return JsonResponse({'result':'failure'})
 
-
+#  通过项目名称获取项目并修改项目图谱地址
+def updatePhoto(id,photo):
+    # 获取参数
+    base_query = Project.objects
+    obj = base_query.filter(project_id=id).first()
+    if not obj:
+        return JsonResponse({'result': 'failure', 'message': '项目不存在'})
+    obj.project_photo = photo
+    obj.update_time = time_utils.now()
+    obj.save()
+    return JsonResponse({'result': 'success'})
 

@@ -12,6 +12,7 @@ urlpatterns = [
     path('project/delete/', views.delete), #删除项目
     path('project/detail/', views.detail), #项目详情
     path('project/update/', views.update), #项目修改
+    path('project/updatePhoto/', views.updatePhoto), #修改项目图片地址
     path('project/fieldList/', views.fieldList), #领域列表
     path('project/queryProjectConceptInfo/',views.queryProjectConceptInfo),  #项目选中
     path('project/focusProjectConceptInfo/',views.focusProjectConceptInfo),  #项目聚焦 需要返回图谱数据
