@@ -91,7 +91,8 @@ def tree_info(result,prj_label):
         #获取关系
         for r in r_index:
             rel_info = {}
-            rel_info["name"] = res[r]
+            rel_info["type"] = res[r]
+            rel_info["name"] = getRefName(res[r])
             rel_info["source"] = str(res[r+1].identity)
             rel_info["target"] = str(res[r-1].identity)
             rels.append(copy.deepcopy(rel_info))
@@ -212,6 +213,12 @@ def node_info(n_id,prj_label):
     node_info["properties"] = properties
     return node_info
 
+#通过关系类型code获取关系类型名称
+def getRefName(type):
+    if "belong_to" == type:
+        return "属于"
+    else:
+        return "标准化为"
 #单一项目归一查询 20200107
 def query_normalize_detail(prj_label,prj_name,area,name,node_id):
     """
@@ -376,7 +383,8 @@ def select_tree_info(result,prj_label):
         #获取关系
         for r in r_index:
             rel_info = {}
-            rel_info["name"] = res[r]
+            rel_info["type"] = res[r]
+            rel_info["name"] = getRefName(res[r])
             rel_info["source"] = str(res[r+1].identity)
             rel_info["target"] = str(res[r-1].identity)
             rels.append(copy.deepcopy(rel_info))
