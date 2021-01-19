@@ -105,7 +105,7 @@ def tree_info(result,prj_label):
             for k,v in res[i].items(): #遍历属性，排除非业务字段
                 if k == "name":
                     node_info[k] = v
-                elif k  not in ['uid','delete_flag','in_node','out_node']:
+                elif k  not in ['delete_flag','in_node','out_node']:
                     properties[k] = v
             node_info["properties"] = properties
             nodes.append(copy.deepcopy(node_info))
@@ -207,7 +207,7 @@ def node_info(n_id,prj_label):
     for k,v in nd.items(): #遍历属性，排除非业务字段
         if k == "name":
             node_info[k] = v
-        elif k not in ['uid','delete_flag','in_node','out_node']:
+        elif k not in ['delete_flag','in_node','out_node']:
             properties[k] = v
     node_info["properties"] = properties
     return node_info
@@ -236,7 +236,7 @@ def query_normalize_detail(prj_label,prj_name,area,name,node_id):
         # 通过节点获取属性
         properties = {}
         for k, v in res[2].items():  # 遍历属性，排除非业务字段
-            if k not in ['uid', 'delete_flag', 'in_node', 'out_node']:
+            if k not in ['delete_flag', 'in_node', 'out_node']:
                 properties[k] = v
         card["properties"] = properties
         cql_tree = ""
@@ -297,7 +297,7 @@ def select_node(node_id,prj_label):
         # 通过节点获取属性
         properties = {}
         for k, v in res[3].items():  # 遍历属性，排除非业务字段
-            if k not in ['uid', 'delete_flag', 'in_node', 'out_node']:
+            if k not in ['delete_flag', 'in_node', 'out_node']:
                 properties[k] = v
         card["properties"] = properties
         cql_tree = "" # 同义词
@@ -390,7 +390,7 @@ def select_tree_info(result,prj_label):
             for k,v in res[i].items(): #遍历属性，排除非业务字段
                 if k == "name":
                     node_info[k] = v
-                elif k  not in ['uid','delete_flag','in_node','out_node']:
+                elif k  not in ['delete_flag','in_node','out_node']:
                     properties[k] = v
             node_info["properties"] = properties
             nodes.append(copy.deepcopy(node_info))
@@ -414,7 +414,7 @@ def select_node_name(name,prj_label):
         # 通过节点获取属性
         properties = {}
         for k, v in res[2].items():  # 遍历属性，排除非业务字段
-            if k not in ['uid', 'delete_flag', 'in_node', 'out_node']:
+            if k not in ['delete_flag', 'in_node', 'out_node']:
                 properties[k] = v
         card["properties"] = properties
         cql_tree = ""  # 同义词
