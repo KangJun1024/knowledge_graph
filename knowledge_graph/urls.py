@@ -4,8 +4,8 @@ from django.conf.urls import include
 from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/login/', views.login),
-    path('api/chart/', views.chart),
-    path('api/statistics/', views.statistics),
-    path('api/', include('project.urls')),
+    path('apl/login/', views.login),
+    path('apl/chart/', views.chart),
+    path('apl/statistics/', views.statistics),
+    path('apl/', include('project.urls')),
 ]
