@@ -21,10 +21,10 @@ def get_nd_rel_ct(labels:list,type:int):
         labels_sql = ':' + ':'.join(str(label) for label in labels)
     #概念数量
     if  type is not None and 0 == type:
-        cql = "match (n%s) return count(n)"%(labels_sql)
+        cql = "match (n%s) where n.delete_flag = 0 return count(n)"%(labels_sql)
     #三元组数量
     if  type is not None and 1 == type:
-        cql = "match (n%s)-[r]->(m) return count(n)"%(labels_sql)
+        cql = "match (n%s)-[r]->(m) where n.delete_flag = 0 return count(n)"%(labels_sql)
     if "" != cql:
         print(cql)
         ct = list(graph.run(cql).data()[0].values())[0]
@@ -55,7 +55,7 @@ def get_prj_kg(prj_label:str):
     ['uid','delete_flag','in_node','out_node']
     """
     #顶级节点选取
-    cql = "match (n:%s) where n.class = '顶级节点' return n limit 1"%(prj_label) #直接取顶级节点
+    cql = "match (n:%s) where n.class = '顶级节点' and n.delete_flag = 0 return n limit 1"%(prj_label) #直接取顶级节点
     result = graph.run(cql).to_ndarray()
     if len(result) == 0: #无顶级节点标识，取随机一棵树的顶点
         cql = "match (n:%s) with size((n)-[]->()) as out,size((n)<-[]-()) as in, n where out = 0 and in > 0 return n ORDER BY RAND() limit 1"%(prj_label)
@@ -65,10 +65,10 @@ def get_prj_kg(prj_label:str):
     else:
         return {}
     #由顶点向下搜索树
-    cql = "match(n:%s)<-[r1]-(p)<-[r2]-(m) where id(n)=%s return n,type(r1),p,type(r2),m limit 50"%(prj_label,top_id) #取三层结构
+    cql = "match(n:%s)<-[r1]-(p)<-[r2]-(m) where id(n)=%s and n.delete_flag = 0 return n,type(r1),p,type(r2),m limit 50"%(prj_label,top_id) #取三层结构
     result = graph.run(cql).to_ndarray()
     if len(result) == 0: #无三层结构，取两层结构
-        cql = "match(n:%s)<-[r1]-(p) where id(n)=%s return n,type(r1),p limit 100"%(prj_label,top_id) #取两层结构
+        cql = "match(n:%s)<-[r1]-(p) where id(n)=%s and n.delete_flag = 0 return n,type(r1),p limit 100"%(prj_label,top_id) #取两层结构
         result = graph.run(cql).to_ndarray()
     #返回树信息
     tree = {}
@@ -153,7 +153,7 @@ def query_normalize(prj_label,prj_name,area,name):
     """
     某项目，某领域的归一查询
     """
-    cql = "match (n:%s) where n.name='%s' return id(n),labels(n)"%(prj_label,name)
+    cql = "match (n:%s) where n.name='%s' and n.delete_flag = 0 return id(n),labels(n)"%(prj_label,name)
     print(cql)
     result = graph.run(cql).to_ndarray()
     print(result)
@@ -170,13 +170,13 @@ def query_normalize(prj_label,prj_name,area,name):
         card["graph"] = {}
         cql_tree = ""
         if "原始词" in res[1]:
-            cql = "match (n)-[r:is]->(m) where id(n)=%s return id(m),m.name"%(res[0])#自身
+            cql = "match (n)-[r:is]->(m) where id(n)=%s and n.delete_flag = 0 return id(m),m.name"%(res[0])#自身
             rs = graph.run(cql).to_ndarray()
             if len(rs) > 0:
-                cql_tree = "match (n)-[r:is]->(m) where id(m)=%s return m,type(r),n"%(rs[0][0])#归一树
+                cql_tree = "match (n)-[r:is]->(m) where id(m)=%s and n.delete_flag = 0 return m,type(r),n"%(rs[0][0])#归一树
                 card["std_vocab"] = str(rs[0][1])
         elif "标准词" in res[1]:
-            cql_tree = "match (n)<-[r:is]-(m) where id(n)=%s return n,type(r),m"%(res[0])#归一树
+            cql_tree = "match (n)<-[r:is]-(m) where id(n)=%s and n.delete_flag = 0 return n,type(r),m"%(res[0])#归一树
             card["std_vocab"] = name
         rst = graph.run(cql_tree).to_ndarray()
         if "" != cql_tree and len(rst) > 0:
@@ -196,7 +196,7 @@ def query_normalize(prj_label,prj_name,area,name):
 
 #通过id返回节点信息
 def node_info(n_id,prj_label):
-    cql = "match (n) where id(n)=%s return n"%(n_id)
+    cql = "match (n) where id(n)=%s and n.delete_flag = 0 return n"%(n_id)
     result = graph.run(cql).to_ndarray()
     nd = result[0][0]
     node_info = {}
@@ -217,7 +217,7 @@ def query_normalize_detail(prj_label,prj_name,area,name,node_id):
     """
     某项目，某领域的归一查询
     """
-    cql = "match (n:%s) where n.name='%s' and id(n)=%s return id(n),labels(n),n"%(prj_label,name,node_id)
+    cql = "match (n:%s) where n.name='%s' and id(n)=%s and n.delete_flag = 0 return id(n),labels(n),n"%(prj_label,name,node_id)
     print(cql)
     result = graph.run(cql).to_ndarray()
     print(result)
@@ -241,10 +241,10 @@ def query_normalize_detail(prj_label,prj_name,area,name,node_id):
         card["properties"] = properties
         cql_tree = ""
         if "原始词" in res[1]:
-            cql = "match (n)-[r:is]->(m) where id(n)=%s return id(m),m.name"%(res[0])
+            cql = "match (n)-[r:is]->(m) where id(n)=%s and n.delete_flag = 0 return id(m),m.name"%(res[0])
             rs = graph.run(cql).to_ndarray()
             if len(rs) > 0:
-                cql_tree = "match (n)-[r:is]->(m) where id(m)=%s return m,type(r),n"%(rs[0][0])
+                cql_tree = "match (n)-[r:is]->(m) where id(m)=%s and n.delete_flag = 0 return m,type(r),n"%(rs[0][0])
                 card["std_vocab"] = str(rs[0][1])
         elif "标准词" in res[1]:
             cql_tree = "match (n)<-[r:is]-(m) where id(n)=%s return n,type(r),m"%(res[0])
@@ -267,7 +267,7 @@ def query_normalize_detail(prj_label,prj_name,area,name,node_id):
 #获取节点路径api 20200107
 def query_path(arr,node_id,node_name,prj_label):
     arr.append(node_name)
-    path = "match (n)-[r]->(m) where id(n)=%s return id(m),m.name" %(node_id)
+    path = "match (n)-[r]->(m) where id(n)=%s and n.delete_flag = 0 return id(m),m.name" %(node_id)
     result = graph.run(path).to_ndarray()
     if result is not None and len(result) > 0:
         query_path(arr,result[0][0],result[0][1],prj_label)
@@ -283,7 +283,7 @@ def select_node(node_id,prj_label):
     :return:
     """
     # 查询节点类型
-    cql = "match (n:%s) where id(n)=%s return id(n),labels(n),n.name,n" % (prj_label,node_id)
+    cql = "match (n:%s) where id(n)=%s and n.delete_flag = 0 return id(n),labels(n),n.name,n" % (prj_label,node_id)
     print(cql)
     result = graph.run(cql).to_ndarray()
     card = {}
@@ -303,13 +303,13 @@ def select_node(node_id,prj_label):
         cql_tree = "" # 同义词
         # 获取同义词和标准词
         if "原始词" in res[1]:
-            cql = "match (n)-[r:is]->(m) where id(n)=%s return id(m),m.name" % (res[0])
+            cql = "match (n)-[r:is]->(m) where id(n)=%s and n.delete_flag = 0 return id(m),m.name" % (res[0])
             rs = graph.run(cql).to_ndarray()
             if len(rs) > 0:
-                cql_tree = "match (n)-[r:is]->(m) where id(m)=%s return m.name,n.name" % (rs[0][0])
+                cql_tree = "match (n)-[r:is]->(m) where id(m)=%s and n.delete_flag = 0 return m.name,n.name" % (rs[0][0])
                 card["std_vocab"] = str(rs[0][1])
         elif "标准词" in res[1]:
-            cql_tree = "match (n)<-[r:is]-(m) where id(n)=%s return n.name,m.name" % (res[0])           
+            cql_tree = "match (n)<-[r:is]-(m) where id(n)=%s and n.delete_flag = 0 return n.name,m.name" % (res[0])
             card["std_vocab"] = res[2]
         rst = graph.run(cql_tree).to_ndarray() # 同义词
         print(cql_tree)
@@ -330,11 +330,11 @@ def get_node_tree(node_id,prj_label):
     tree = {}
     tree_in = {}
     tree_out = {}
-    cql_tree_in = "match (n)-[r]->(m) where id(m)=%s return m,type(r),n" %(node_id)
+    cql_tree_in = "match (n)-[r]->(m) where id(m)=%s and n.delete_flag = 0 return m,type(r),n" %(node_id)
     rs_in = graph.run(cql_tree_in).to_ndarray()
     if len(rs_in) > 0:
         tree_in = select_tree_info(rs_in, prj_label)
-    cql_tree_out = "match (n)-[r]->(m) where id(n)=%s return m,type(r),n" %(node_id)
+    cql_tree_out = "match (n)-[r]->(m) where id(n)=%s and n.delete_flag = 0 return m,type(r),n" %(node_id)
     rs_out = graph.run(cql_tree_out).to_ndarray()
     if len(rs_out) > 0:
         tree_out = select_tree_info(rs_out, prj_label)
@@ -400,7 +400,7 @@ def select_tree_info(result,prj_label):
 
 #通过节点名称获取节点信息
 def select_node_name(name,prj_label):
-    cql = "match (n:%s) where n.name='%s' return id(n),labels(n),n" % (prj_label, name)
+    cql = "match (n:%s) where n.name='%s' and n.delete_flag = 0 return id(n),labels(n),n" % (prj_label, name)
     result = graph.run(cql).to_ndarray()
     cards = []
     for res in result:
@@ -420,13 +420,13 @@ def select_node_name(name,prj_label):
         cql_tree = ""  # 同义词
         # 获取同义词和标准词
         if "原始词" in res[1]:
-            cql = "match (n)-[r:is]->(m) where id(n)=%s return id(m),m.name" % (res[0])
+            cql = "match (n)-[r:is]->(m) where id(n)=%s and n.delete_flag = 0 return id(m),m.name" % (res[0])
             rs = graph.run(cql).to_ndarray()
             if len(rs) > 0:
-                cql_tree = "match (n)-[r:is]->(m) where id(m)=%s return m.name,n.name" % (rs[0][0])
+                cql_tree = "match (n)-[r:is]->(m) where id(m)=%s and n.delete_flag = 0 return m.name,n.name" % (rs[0][0])
                 card["std_vocab"] = str(rs[0][1])
         elif "标准词" in res[1]:
-            cql_tree = "match (n)<-[r:is]-(m) where id(n)=%s return n.name,m.name" % (res[0])
+            cql_tree = "match (n)<-[r:is]-(m) where id(n)=%s and n.delete_flag = 0 return n.name,m.name" % (res[0])
             card["std_vocab"] = name
         rst = graph.run(cql_tree).to_ndarray()  # 同义词
         print(cql_tree)
@@ -448,11 +448,11 @@ def get_node_tree_name(name,prj_label):
     tree = {}
     tree_in = {}
     tree_out = {}
-    cql_tree_in = "match (n:%s)-[r]->(m) where m.name='%s' return m,type(r),n" %(prj_label,name)
+    cql_tree_in = "match (n:%s)-[r]->(m) where m.name='%s' and n.delete_flag = 0 return m,type(r),n" %(prj_label,name)
     rs_in = graph.run(cql_tree_in).to_ndarray()
     if len(rs_in) > 0:
         tree_in = select_tree_info(rs_in, prj_label)
-    cql_tree_out = "match (n:%s)-[r]->(m) where n.name='%s' return m,type(r),n" %(prj_label,name)
+    cql_tree_out = "match (n:%s)-[r]->(m) where n.name='%s' and n.delete_flag = 0 return m,type(r),n" %(prj_label,name)
     rs_out = graph.run(cql_tree_out).to_ndarray()
     if len(rs_out) > 0:
         tree_out = select_tree_info(rs_out, prj_label)
