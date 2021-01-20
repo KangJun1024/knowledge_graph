@@ -5,6 +5,15 @@ import pandas as pd
 
 graph = Graph("bolt://120.221.160.106:8002", username="neo4j", password="123456")
 
+#删除关系
+def delete_rel(prj_label,source_uid,target_uid):
+    cql = "match(n:%s) where n.uid = '%s' match (n) with size((n)-[]->()) as out, n where out > 1  return n"%(prj_label,source_uid)
+    result = graph.run(cql).to_ndarray() #判断出度大于1
+    if len(result) > 0:
+        cql = "match(n:del_test)-[r]->(m:del_test) where n.uid = '%s' and m.uid = '%s' delete r"%(source_uid,target_uid)
+        graph.run(cql) #只删除关系
+    else:
+        delete_node(prj_label,source_uid) #删除关系下的节点树
 
 #删除节点及其子树
 def delete_node(prj_label,node_uid):    
@@ -71,23 +80,23 @@ def creatNode(node,prj_label):
 
 if __name__ =="__main__":
     # delete_node("PJ4cb80e38554511eb8a32fa163eac98f2","s199465") #s199463,s199458
-
+    delete_rel("del_test","p11","g1")
     #新增节点
-    node = {
-                "edit_type":"add",
-                "obj_type":"node",
-                "node":{
-                    "uid":"o1000133333567888567",
-                    "name":"霍乱10001567888567",
-                    "label":"原始词"
-                },
-                "rel":{
-                    "name":"is",
-                    "source_uid":"o1000133333567888567",
-                    "target_uid":"s198739"
-                }
-            }
-    project_id = "PJb9bcf496561a11ebba73fa163eac98f2"
+    # node = {
+    #             "edit_type":"add",
+    #             "obj_type":"node",
+    #             "node":{
+    #                 "uid":"o1000133333567888567",
+    #                 "name":"霍乱10001567888567",
+    #                 "label":"原始词"
+    #             },
+    #             "rel":{
+    #                 "name":"is",
+    #                 "source_uid":"o1000133333567888567",
+    #                 "target_uid":"s198739"
+    #             }
+    #         }
+    # project_id = "PJb9bcf496561a11ebba73fa163eac98f2"
 
-    creatNode(node,project_id)
+    # creatNode(node,project_id)
 
