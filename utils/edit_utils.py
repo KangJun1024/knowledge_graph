@@ -61,17 +61,35 @@ def creatNode(node,prj_label):
     label = data["node"]["label"]
     # 获取关系数据
     relName = data["rel"]["name"]
-    # sourceId = data["rel"]["source_uid"]
     targetId = data["rel"]["target_uid"]  #父节点
     # match 父节点
     sql_match_target = "match(p:%s) where p.uid='%s'" %(prj_label,targetId)
     # 创建节点语句
     sql_create_node = "create(n:%s:%s{name:'%s',uid:'%s',delete_flag:0})-[:%s]->(p)"%(prj_label,label,name,uid,relName)
-
     sql_create_node = sql_match_target + " " + sql_create_node
     print(sql_create_node)
 
     graph.run(sql_create_node)
+
+#创建关系20210120
+def creatRel(node,prj_label):
+    # 解析json数据
+    data = node
+    # 获取关系数据
+    relName = data["rel"]["name"]
+    sourceId = data["rel"]["source_uid"]
+    targetId = data["rel"]["target_uid"]  #父节点
+    # match 父节点
+    sql_match_target = "match(p:%s) where p.uid='%s'" %(prj_label,targetId)
+    # match 子节点
+    sql_match_source = "match(m:%s) where m.uid='%s'" %(prj_label,sourceId)
+    # 创建关系语句
+    sql_create_ref = "create (p)-[:%s]->(m)"%(relName)
+    sql_create_ref = sql_match_target + " " + sql_match_source + " " + sql_create_ref
+    print(sql_create_ref)
+
+    graph.run(sql_create_ref)
+
 
 if __name__ =="__main__":
     # delete_node("PJ4cb80e38554511eb8a32fa163eac98f2","s199465") #s199463,s199458
@@ -86,12 +104,13 @@ if __name__ =="__main__":
                     "label":"原始词"
                 },
                 "rel":{
-                    "name":"is",
-                    "source_uid":"o1000133333567888567",
-                    "target_uid":"s198739"
+                    "name":"belong_to",
+                    "source_uid":"s199716",
+                    "target_uid":"s198661"
                 }
             }
     project_id = "PJb9bcf496561a11ebba73fa163eac98f2"
 
-    creatNode(node,project_id)
+    # creatNode(node,project_id)
+    creatRel(node,project_id)
 
