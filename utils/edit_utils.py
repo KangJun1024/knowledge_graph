@@ -35,7 +35,7 @@ def query_children_tree(input_id:int,tree:[]):
     if not (input_id in tree):
         tree.append(input_id)
         cql = "match(n)<-[r]-(m) where id(n)=%s return id(m)" %(input_id)
-        result = graph.run(cql).to_ndarray() #二维数组        
+        result = graph.run(cql).to_ndarray() #二维数组
         for r in result:
             query_children_tree(r[0],tree)
 
@@ -61,16 +61,17 @@ def creatNode(node,prj_label):
     label = data["node"]["label"]
     # 获取关系数据
     relName = data["rel"]["name"]
-    sourceId = data["rel"]["source_uid"]
+    # sourceId = data["rel"]["source_uid"]
     targetId = data["rel"]["target_uid"]  #父节点
-    # 创建关系语句
-    sql_create_relation = "merge (%s)-[:%s]->(%s) "%(sourceId,relName,targetId)
-    print(sql_create_relation)
+    # match 父节点
+    sql_match_target = "match(p:%s) where p.uid='%s'" %(prj_label,targetId)
     # 创建节点语句
-    sql_create_node = "merge (" + name + ":" + label + ":" + name  + ":" + prj_label + "{uid" + ':' + "'"+uid + "'})"
+    sql_create_node = "create(n:%s:%s{name:'%s',uid:'%s',delete_flag:0})-[:%s]->(p)"%(prj_label,label,name,uid,relName)
+
+    sql_create_node = sql_match_target + " " + sql_create_node
     print(sql_create_node)
+
     graph.run(sql_create_node)
-    graph.run(sql_create_relation)
 
 if __name__ =="__main__":
     # delete_node("PJ4cb80e38554511eb8a32fa163eac98f2","s199465") #s199463,s199458
@@ -80,17 +81,17 @@ if __name__ =="__main__":
                 "edit_type":"add",
                 "obj_type":"node",
                 "node":{
-                    "uid":"o10001333333332",
-                    "name":"霍乱10001",
+                    "uid":"o1000133333567888567",
+                    "name":"霍乱10001567888567",
                     "label":"原始词"
                 },
                 "rel":{
                     "name":"is",
-                    "source_uid":"o10001333333332",
-                    "target_uid":"o16"
+                    "source_uid":"o1000133333567888567",
+                    "target_uid":"s198739"
                 }
             }
-    project_id = "PJ3608a678555111ebbc42fa163eac98f2"
+    project_id = "PJb9bcf496561a11ebba73fa163eac98f2"
 
     creatNode(node,project_id)
 
