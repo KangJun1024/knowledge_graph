@@ -6,8 +6,14 @@ import pandas as pd
 graph = Graph("bolt://120.221.160.106:8002", username="neo4j", password="123456")
 
 #删除关系
-def delete_rel(prj_label,source_uid,target_uid):
-    cql = "match(n:%s) where n.uid = '%s' match (n) with size((n)-[]->()) as out, n where out > 1  return n"%(prj_label,source_uid)
+def delete_rel(node,prj_label):
+    # 解析json数据
+    data = node
+    # 获取节点数据
+    source_uid = data["rel"]["source_uid"]
+    target_uid = data["rel"]["target_uid"]
+    #计算出度
+    cql = "match(n:%s) where n.uid = '%s' and n.delete_flag = 0 match (n) with size((n)-[r]->(m)) as out,n,m where out > 1 and m.delete_flag = 0 return n"%(prj_label,source_uid)
     result = graph.run(cql).to_ndarray() #判断出度大于1
     if len(result) > 0:
         cql = "match(n:del_test)-[r]->(m:del_test) where n.uid = '%s' and m.uid = '%s' delete r"%(source_uid,target_uid)
@@ -15,15 +21,20 @@ def delete_rel(prj_label,source_uid,target_uid):
     else:
         delete_node(prj_label,source_uid) #删除关系下的节点树
 
-#删除节点及其子树
-def delete_node(prj_label,node_uid):    
+#删除节点
+def delete_node(node,prj_label):  
+    # 解析json数据
+    data = node
+    # 获取节点数据
+    node_uid = data["node"]["uid"]
+    #计算id
     cql = "match(n:%s) where n.uid = '%s' return id(n)" %(prj_label,node_uid)
     result = graph.run(cql).to_ndarray()  #通过uid获取id
     if len(result) > 0:
         input_id = result[0][0]
         del_nodes = query_del_nodes(input_id) #获取需删除的树所有id
         cql = "match(n:%s) where id(n) in %s set n.delete_flag = 1" %(prj_label,str(del_nodes))
-        graph.run(cql) #删除节点
+        graph.run(cql) #删除节点及其子树
 
 #查询需要删除的节点
 def query_del_nodes(input_id):
@@ -43,7 +54,7 @@ def query_del_nodes(input_id):
 def query_children_tree(input_id:int,tree:[]):
     if not (input_id in tree):
         tree.append(input_id)
-        cql = "match(n)<-[r]-(m) where id(n)=%s return id(m)" %(input_id)
+        cql = "match(n)<-[r]-(m) where id(n)=%s and m.delete_flag = 0 return id(m)" %(input_id)
         result = graph.run(cql).to_ndarray() #二维数组
         for r in result:
             query_children_tree(r[0],tree)
@@ -52,7 +63,7 @@ def query_children_tree(input_id:int,tree:[]):
 def query_multi_parent(tree):
     arr = []
     for t in tree:
-        cql = "match(n)-[r]->(m) where id(n)=%s return id(m)" %(t)
+        cql = "match(n)-[r]->(m) where id(n)=%s  and m.delete_flag = 0 return id(m)" %(t)
         result = graph.run(cql).to_ndarray() #二维数组  
         for r in result:
             if r[0] not in tree: #判断是否有外部父节点
@@ -102,7 +113,6 @@ def creatRel(node,prj_label):
 
 if __name__ =="__main__":
     # delete_node("PJ4cb80e38554511eb8a32fa163eac98f2","s199465") #s199463,s199458
-    delete_rel("del_test","p11","g1")
     #新增节点
     node = {
                 "edit_type":"add",
@@ -114,12 +124,13 @@ if __name__ =="__main__":
                 },
                 "rel":{
                     "name":"belong_to",
-                    "source_uid":"s199716",
-                    "target_uid":"s198661"
+                    "source_uid":"p1",
+                    "target_uid":"g1"
                 }
             }
     project_id = "PJb9bcf496561a11ebba73fa163eac98f2"
 
     # creatNode(node,project_id)
-    creatRel(node,project_id)
+    # creatRel(node,project_id)
+    delete_rel(node,'del_test')
 
