@@ -35,7 +35,7 @@ def query_children_tree(input_id:int,tree:[]):
     if not (input_id in tree):
         tree.append(input_id)
         cql = "match(n)<-[r]-(m) where id(n)=%s return id(m)" %(input_id)
-        result = graph.run(cql).to_ndarray() #二维数组        
+        result = graph.run(cql).to_ndarray() #二维数组
         for r in result:
             query_children_tree(r[0],tree)
 
@@ -51,10 +51,43 @@ def query_multi_parent(tree):
                 break
     return arr        
 
+#创建节点20210119
+def creatNode(node,prj_label):
+    # 解析json数据
+    data = node
+    # 获取节点数据
+    uid = data["node"]["uid"]
+    name = data["node"]["name"]
+    label = data["node"]["label"]
+    # 获取关系数据
+    relName = data["rel"]["name"]
+    # sourceId = data["rel"]["source_uid"]
+    targetId = data["rel"]["target_uid"]  #父节点
+    # match 父节点
+    sql_match_target = "match(p:%s) where p.uid='%s'" %(prj_label,targetId)
+    # 创建节点语句
+    sql_create_node = "create(n:%s:%s{name:'%s',uid:'%s',delete_flag:0})-[:%s]->(p)"%(prj_label,label,name,uid,relName)
+
 
 if __name__ =="__main__":
-    delete_node("del_test","g1") #s199463,s199458
+    # delete_node("PJ4cb80e38554511eb8a32fa163eac98f2","s199465") #s199463,s199458
 
+    #新增节点
+    node = {
+                "edit_type":"add",
+                "obj_type":"node",
+                "node":{
+                    "uid":"o1000133333567888567",
+                    "name":"霍乱10001567888567",
+                    "label":"原始词"
+                },
+                "rel":{
+                    "name":"is",
+                    "source_uid":"o1000133333567888567",
+                    "target_uid":"s198739"
+                }
+            }
+    project_id = "PJb9bcf496561a11ebba73fa163eac98f2"
 
-
+    creatNode(node,project_id)
 
