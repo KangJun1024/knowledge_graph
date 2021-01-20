@@ -53,7 +53,7 @@ def query_multi_parent(tree):
 
 
 if __name__ =="__main__":
-    delete_node("PJ0f78e9b054c411ebb989fa163eac98f2","s4999") #s199463,s199458
+    delete_node("del_test","g1") #s199463,s199458
 
 
 
