@@ -13,7 +13,7 @@ def delete_node(prj_label,node_uid):
     if len(result) > 0:
         input_id = result[0][0]
         del_nodes = query_del_nodes(input_id) #获取需删除的树所有id
-        cql = "match(n:%s) where id(n) in %s detach delete n" %(prj_label,str(del_nodes))
+        cql = "match(n:%s) where id(n) in %s set n.delete_flag = 1" %(prj_label,str(del_nodes))
         graph.run(cql) #删除节点
 
 #查询需要删除的节点
