@@ -13,13 +13,14 @@ def delete_rel(node,prj_label):
     source_uid = data["rel"]["source_uid"]
     target_uid = data["rel"]["target_uid"]
     #计算出度
-    cql = "match(n:%s) where n.uid = '%s' and n.delete_flag = 0 match (n) with size((n)-[r]->(m)) as out,n,m where out > 1 and m.delete_flag = 0 return n"%(prj_label,source_uid)
-    result = graph.run(cql).to_ndarray() #判断出度大于1
-    if len(result) > 0:
+    cql = "match(n:%s)-->(m:%s) where n.uid = '%s' and n.delete_flag = 0 and m.delete_flag = 0 return m"%(prj_label,prj_label,source_uid)
+    result = graph.run(cql).to_ndarray() 
+    if len(result) > 1: #判断出度大于1
         cql = "match(n:del_test)-[r]->(m:del_test) where n.uid = '%s' and m.uid = '%s' delete r"%(source_uid,target_uid)
         graph.run(cql) #只删除关系
-    else:
-        delete_node(prj_label,source_uid) #删除关系下的节点树
+    elif len(result) == 1:
+        node["node"]["uid"] = source_uid
+        delete_node(node,prj_label) #删除关系下的节点树
 
 #删除节点
 def delete_node(node,prj_label):  
@@ -28,7 +29,7 @@ def delete_node(node,prj_label):
     # 获取节点数据
     node_uid = data["node"]["uid"]
     #计算id
-    cql = "match(n:%s) where n.uid = '%s' return id(n)" %(prj_label,node_uid)
+    cql = "match(n:%s) where n.uid = '%s' and n.delete_flag = 0 return id(n)" %(prj_label,node_uid)
     result = graph.run(cql).to_ndarray()  #通过uid获取id
     if len(result) > 0:
         input_id = result[0][0]
@@ -118,19 +119,19 @@ if __name__ =="__main__":
                 "edit_type":"add",
                 "obj_type":"node",
                 "node":{
-                    "uid":"o1000133333567888567",
+                    "uid":"og1",
                     "name":"霍乱10001567888567",
                     "label":"原始词"
                 },
                 "rel":{
                     "name":"belong_to",
-                    "source_uid":"p1",
-                    "target_uid":"g1"
+                    "source_uid":"c22",
+                    "target_uid":"p11"
                 }
             }
     project_id = "PJb9bcf496561a11ebba73fa163eac98f2"
 
     # creatNode(node,project_id)
     # creatRel(node,project_id)
-    delete_rel(node,'del_test')
+    delete_node(node,'del_test')
 
