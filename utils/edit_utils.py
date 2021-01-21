@@ -3,6 +3,7 @@ from py2neo import Graph
 from pandas import DataFrame
 import pandas as pd
 
+# graph = Graph("bolt://120.221.160.106:8002", username="neo4j", password="123456")
 graph = Graph("bolt://127.0.0.1:8002", username="neo4j", password="123456")
 
 #删除关系

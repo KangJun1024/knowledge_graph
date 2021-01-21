@@ -369,16 +369,13 @@ def updateProjectConcepts(request):
                         edit_utils.creatNode(edit,projectId)
                     elif("del" == edit["edit_type"] and "node" == edit["obj_type"]):
                         #节点删除
-                        uid = edit["node"]["uid"]
-                        edit_utils.delete_node(projectId,uid)
+                        edit_utils.delete_node(edit,projectId)
                     elif ("add" == edit["edit_type"] and "rel" == edit["obj_type"]):
                         #关系新增
                         edit_utils.creatRel(edit,projectId)
                     elif ("del" == edit["edit_type"] and "rel" == edit["obj_type"]):
                         #关系删除
-                        targetUid = edit["rel"]["source_uid"]
-                        sourceUid = edit["rel"]["target_uid"]
-                        edit_utils.delete_rel(projectId,sourceUid,targetUid)
+                        edit_utils.delete_rel(edit,projectId)
             return JsonResponse({'result': 'success'})
         except Exception as e:
             error_logger.error(e)
