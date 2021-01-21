@@ -41,6 +41,9 @@ def load_csv(labels,head):
     index_name = 'create index on :%s(name)' % (labels)
     print(index_name)
     graph.run(index_name)
+    index_delete = 'create index on :%s(delete_flag)' % (labels)
+    print(index_delete)
+    graph.run(index_delete)
     print(get_localtime() + "创建索引完成！")
     # 创建is_rel关系
     is_cypher = 'USING PERIODIC COMMIT 5000 LOAD CSV FROM "%s" AS line match (m:%s{uid:line[0]}),(n:%s{uid:line[1]}) create (m)-[r:is]->(n)' % (
