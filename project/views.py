@@ -1,7 +1,7 @@
 from django.http import JsonResponse, HttpRequest
 from knowledge_graph import settings
 from .models import Project,Field
-from utils import time_utils,common_utils,import_utils,query_utils,copy_utils
+from utils import time_utils,common_utils,import_utils,query_utils,copy_utils,edit_utils
 from django.db.models import Q
 import os
 import simplejson
@@ -348,4 +348,38 @@ def updatePhoto(request):
             return JsonResponse({'result': 'success'})
         except Exception as e:
             print(e)
+            return JsonResponse({'result': 'failure'})
+
+# 项目图谱编辑20200121
+def updateProjectConcepts(request):
+    # 获取参数
+    if request.method == 'POST':
+        try:
+            payload = simplejson.loads(request.body)
+            access_logger.info(payload)
+            #项目ID
+            projectId = payload['prj_id']
+            #图谱编辑数据
+            editList = payload['edit_list']
+            #按序操作图谱数据
+            if editList is not None and len(editList) > 0:
+                for edit in editList:
+                    if("add" == edit["edit_type"] and "node" == edit["obj_type"]):
+                        #节点新增
+                        edit_utils.creatNode(edit,projectId)
+                    elif("del" == edit["edit_type"] and "node" == edit["obj_type"]):
+                        #节点删除
+                        uid = edit["node"]["uid"]
+                        edit_utils.delete_node(projectId,uid)
+                    elif ("add" == edit["edit_type"] and "rel" == edit["obj_type"]):
+                        #关系新增
+                        edit_utils.creatRel(edit,projectId)
+                    elif ("del" == edit["edit_type"] and "rel" == edit["obj_type"]):
+                        #关系删除
+                        targetUid = edit["rel"]["source_uid"]
+                        sourceUid = edit["rel"]["target_uid"]
+                        edit_utils.delete_rel(projectId,sourceUid,targetUid)
+            return JsonResponse({'result': 'success'})
+        except Exception as e:
+            error_logger.error(e)
             return JsonResponse({'result': 'failure'})
