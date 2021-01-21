@@ -47,24 +47,24 @@ def prj_to_csv(prj_id,pro,out_dir):
     print("正在读取原始词...")
     pro_ori = pro["原始词"]
     pro_ori_cql = ','.join('n.' + ori for ori in pro_ori )
-    cql = "match (n:原始词:%s) return %s "%(prj_id,pro_ori_cql)
+    cql = "match (n:原始词:%s) where n.delete_flag = 0 return %s "%(prj_id,pro_ori_cql)
     result = graph.run(cql).to_ndarray()
     ori_vocab = DataFrame(result)
     #标准词dataframe
     print("正在读取标准词...")
     pro_std = pro["标准词"]
     pro_std_cql = ','.join('n.' + ori for ori in pro_std )
-    cql = "match (n:标准词:%s) return %s  "%(prj_id,pro_std_cql)
+    cql = "match (n:标准词:%s) where n.delete_flag = 0 return %s  "%(prj_id,pro_std_cql)
     result = graph.run(cql).to_ndarray()
     std_vocab = DataFrame(result)
     #is关系dataframe
     print("正在读取is关系...")
-    cql = "match (n:%s)-[r:is]->(m:%s) return n.uid,m.uid "%(prj_id,prj_id)
+    cql = "match (n:%s)-[r:is]->(m:%s)  where n.delete_flag = 0 and m.delete_flag = 0 return n.uid,m.uid "%(prj_id,prj_id)
     result = graph.run(cql).to_ndarray()
     is_rel = DataFrame(result)
     #belong_to关系dataframe
     print("正在读取belong_to关系...")
-    cql = "match (n:%s)-[r:belong_to]->(m:%s) return n.uid,m.uid "%(prj_id,prj_id)
+    cql = "match (n:%s)-[r:belong_to]->(m:%s) where n.delete_flag = 0 and m.delete_flag = 0 return n.uid,m.uid "%(prj_id,prj_id)
     result = graph.run(cql).to_ndarray()
     belong_rel = DataFrame(result)
     #输出到csv
@@ -106,6 +106,9 @@ def load_csv(prj_id,pro):
     index_name = 'create index on :%s(name)' % (prj_id)
     print(index_name)
     graph.run(index_name)
+    index_delete = 'create index on :%s(delete_flag)' % (prj_id)
+    print(index_delete)
+    graph.run(index_delete)
     print( "创建索引完成！")
     # 创建is_rel关系
     is_cypher = 'USING PERIODIC COMMIT 5000 LOAD CSV FROM "%s" AS line match (m:%s{uid:line[0]}),(n:%s{uid:line[1]}) create (m)-[r:is]->(n)' % (
