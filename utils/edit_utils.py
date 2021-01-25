@@ -17,7 +17,7 @@ def delete_rel(node,prj_label):
     cql = "match(n:%s)-->(m:%s) where n.uid = '%s' and n.delete_flag = 0 and m.delete_flag = 0 return m"%(prj_label,prj_label,source_uid)
     result = graph.run(cql).to_ndarray() 
     if len(result) > 1: #判断出度大于1
-        cql = "match(n:%s)-[r]->(m:%s) where n.uid = '%s' and m.uid = '%s' delete r"%(prj_label,prj_label,source_uid,target_uid)
+        cql = "match(n:%s)-[r]->(m:%s) where n.uid = '%s' and m.uid = '%s' and n.delete_flag = 0 and m.delete_flag = 0 delete r"%(prj_label,prj_label,source_uid,target_uid)
         graph.run(cql) #只删除关系
     elif len(result) == 1:
         node["node"]["uid"] = source_uid
@@ -56,7 +56,7 @@ def query_del_nodes(input_id):
 def query_children_tree(input_id:int,tree:[]):
     if not (input_id in tree):
         tree.append(input_id)
-        cql = "match(n)<-[r]-(m) where id(n)=%s and m.delete_flag = 0 return id(m)" %(input_id)
+        cql = "match(n)<-[r]-(m) where id(n)=%s and n.delete_flag = 0 and m.delete_flag = 0 return id(m)" %(input_id)
         result = graph.run(cql).to_ndarray() #二维数组
         for r in result:
             query_children_tree(r[0],tree)
@@ -65,7 +65,7 @@ def query_children_tree(input_id:int,tree:[]):
 def query_multi_parent(tree):
     arr = []
     for t in tree:
-        cql = "match(n)-[r]->(m) where id(n)=%s  and m.delete_flag = 0 return id(m)" %(t)
+        cql = "match(n)-[r]->(m) where id(n)=%s and n.delete_flag = 0 and m.delete_flag = 0 return id(m)" %(t)
         result = graph.run(cql).to_ndarray() #二维数组  
         for r in result:
             if r[0] not in tree: #判断是否有外部父节点
