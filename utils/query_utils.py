@@ -2,6 +2,7 @@
 
 from py2neo import Graph
 import copy
+import sys
 import simplejson
 
 # graph = Graph("bolt://120.221.160.106:8002", username="neo4j", password="123456")
@@ -277,6 +278,9 @@ def query_path(arr,node_id,node_name,prj_label):
     path = "match (n)-[r]->(m) where id(n)=%s and n.delete_flag = 0 return id(m),m.name" %(node_id)
     result = graph.run(path).to_ndarray()
     if result is not None and len(result) > 0:
+        #判断成环的情况
+        if node_id == result[0][0]:
+            sys.exit()
         query_path(arr,result[0][0],result[0][1],prj_label)
 
 
