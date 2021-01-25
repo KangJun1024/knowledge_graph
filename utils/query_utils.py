@@ -2,7 +2,6 @@
 
 from py2neo import Graph
 import copy
-import sys
 import simplejson
 
 # graph = Graph("bolt://120.221.160.106:8002", username="neo4j", password="123456")
@@ -273,15 +272,14 @@ def query_normalize_detail(prj_label,prj_name,area,name,node_id):
     return cards
 
 #获取节点路径api 20200107
-def query_path(arr,node_id,node_name,prj_label):
+def query_path(arr,node_id,node_name,prj_label,temp_id):
     arr.append(node_name)
-    path = "match (n)-[r]->(m) where id(n)=%s and n.delete_flag = 0 and m.delete_flag = 0 return id(m),m.name" %(node_id)
+    path = "match (n:%s)-[r]->(m) where id(n)=%s and n.delete_flag = 0 and m.delete_flag = 0 return id(m),m.name" %(prj_label,node_id)
+    print(path)
     result = graph.run(path).to_ndarray()
-    if result is not None and len(result) > 0:
+    if result is not None and len(result) > 0 and str(temp_id) != result[0][0]:
         #判断成环的情况
-        if node_id == result[0][0]:
-            sys.exit()
-        query_path(arr,result[0][0],result[0][1],prj_label)
+        query_path(arr,result[0][0],result[0][1],prj_label,temp_id)
 
 
 #通过节点id获取节点信息，选中功能
@@ -331,7 +329,7 @@ def select_node(node_id,prj_label):
             card["syn_vocab"].remove(res[2])
         #节点路径
         arr = []
-        query_path(arr,node_id,res[2],prj_label)
+        query_path(arr,node_id,res[2],prj_label,node_id)
         arr.reverse()
         card["path"] = arr
     return card
@@ -449,7 +447,7 @@ def select_node_name(name,prj_label):
             card["syn_vocab"].remove(name)
         # 节点路径
         arr = []
-        query_path(arr, res[0], name, prj_label)
+        query_path(arr, res[0], name, prj_label,res[0])
         arr.reverse()
         card["path"] = arr
         cards.append(copy.deepcopy(card))
@@ -523,11 +521,11 @@ if __name__ == "__main__":
     # aList.reverse()
     # print("List : ", aList)
 
-    # arr = []
+    arr = []
     #
     # arr.reverse()
     # print(arr)
 
-    # query_path(arr,8360647,"test",'PJ1dacfe724fc411ebb771fa163eac98f2')
+    query_path(arr,12920043,"肠道传染病9869",'PJ5d54ef78556211ebb65ffa163eac98f2',12920043)
     # print(arr)
 
