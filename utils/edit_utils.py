@@ -15,7 +15,7 @@ def delete_rel(node,prj_label):
     target_uid = data["rel"]["target_uid"]
     #计算出度
     cql = "match(n:%s)-->(m:%s) where n.uid = '%s' and n.delete_flag = 0 and m.delete_flag = 0 return m"%(prj_label,prj_label,source_uid)
-    result = graph.run(cql).to_ndarray() 
+    result = graph.run(cql).to_ndarray()
     if len(result) > 1: #判断出度大于1
         cql = "match(n:%s)-[r]->(m:%s) where n.uid = '%s' and m.uid = '%s' and n.delete_flag = 0 and m.delete_flag = 0 delete r"%(prj_label,prj_label,source_uid,target_uid)
         graph.run(cql) #只删除关系
@@ -117,22 +117,23 @@ if __name__ =="__main__":
     # delete_node("PJ4cb80e38554511eb8a32fa163eac98f2","s199465") #s199463,s199458
     #新增节点
     node = {
-                "edit_type":"add",
-                "obj_type":"node",
+                "edit_type":"del",
+                "obj_type":"rel",
                 "node":{
-                    "uid":"og1",
+                    "uid":"12919085",
                     "name":"霍乱10001567888567",
                     "label":"原始词"
                 },
                 "rel":{
                     "name":"belong_to",
-                    "source_uid":"c22",
-                    "target_uid":"p11"
+                    "source_uid":"12919085",
+                    "target_uid":"12919086"
                 }
             }
-    project_id = "PJb9bcf496561a11ebba73fa163eac98f2"
+    project_id = "PJ5d54ef78556211ebb65ffa163eac98f2"
 
     # creatNode(node,project_id)
     # creatRel(node,project_id)
-    delete_node(node,'del_test')
+    # delete_node(node,project_id)
+    delete_rel(node,project_id)
 

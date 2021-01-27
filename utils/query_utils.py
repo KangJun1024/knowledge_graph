@@ -106,7 +106,7 @@ def tree_info(result,prj_label):
             for k,v in res[i].items(): #遍历属性，排除非业务字段
                 if k == "name":
                     node_info[k] = v
-                elif k  not in ['delete_flag','in_node','out_node']:
+                elif k  not in ['delete_flag','in_node','out_node','name']:
                     properties[k] = v
             node_info["properties"] = properties
             nodes.append(copy.deepcopy(node_info))
@@ -208,7 +208,7 @@ def node_info(n_id,prj_label):
     for k,v in nd.items(): #遍历属性，排除非业务字段
         if k == "name":
             node_info[k] = v
-        elif k not in ['delete_flag','in_node','out_node']:
+        elif k not in ['delete_flag','in_node','out_node','name']:
             properties[k] = v
     node_info["properties"] = properties
     return node_info
@@ -400,7 +400,7 @@ def select_tree_info(result,prj_label):
             for k,v in res[i].items(): #遍历属性，排除非业务字段
                 if k == "name":
                     node_info[k] = v
-                elif k  not in ['delete_flag','in_node','out_node']:
+                elif k  not in ['delete_flag','in_node','out_node','name']:
                     properties[k] = v
             node_info["properties"] = properties
             nodes.append(copy.deepcopy(node_info))
@@ -491,7 +491,7 @@ def convert_base64_src_to_img_file(src=None):
         f.write(image_data)
 
 if __name__ == "__main__":
-    convert_base64_src_to_img_file()
+    # convert_base64_src_to_img_file()
 
     # 归一查询api  项目标签查询 名称属性查询
     # trees = query_normalize('test','测试项目','测试领域','test')
@@ -521,11 +521,13 @@ if __name__ == "__main__":
     # aList.reverse()
     # print("List : ", aList)
 
-    arr = []
+    # arr = []
     #
     # arr.reverse()
     # print(arr)
 
-    query_path(arr,12920043,"肠道传染病9869",'PJ5d54ef78556211ebb65ffa163eac98f2',12920043)
+    # query_path(arr,12920043,"肠道传染病9869",'PJ5d54ef78556211ebb65ffa163eac98f2',12920043)
     # print(arr)
-
+    tree = get_prj_kg('PJ5d54ef78556211ebb65ffa163eac98f2')
+    trees = simplejson.dumps(tree,ensure_ascii=False)
+    print(trees)
