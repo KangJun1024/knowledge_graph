@@ -86,7 +86,7 @@ def list(request):
     # 获取参数
     projectFieldcode = request.GET.get("project_fieldcode")
     projectName = request.GET.get("project_name")
-    base_query = Project.objects.order_by('project_status')
+    base_query = Project.objects.order_by('project_status',"-create_time")
     if projectFieldcode is not None and projectName is not None:
         base_query = base_query.filter(Q(project_name__icontains=projectName) &
                           Q(project_fieldcode__icontains=projectFieldcode) & ~Q(project_status=0))
