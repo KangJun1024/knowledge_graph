@@ -243,7 +243,7 @@ def query_normalize_detail(prj_label,prj_name,area,name,node_id):
         # 通过节点获取属性
         properties = {}
         for k, v in res[2].items():  # 遍历属性，排除非业务字段
-            if k not in ['delete_flag', 'in_node', 'out_node']:
+            if k not in ['delete_flag', 'in_node', 'out_node',name]:
                 properties[k] = v
         card["properties"] = properties
         cql_tree = ""
