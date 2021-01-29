@@ -43,6 +43,12 @@ def upload(request):
             # 修改项目状态
             updateStatus(project_id,3)
             return JsonResponse({'result': 'success'})
+            #  查询项目三元组数和概念数 编辑项目
+            # 三元组数
+            triples = query_utils.get_nd_rel_ct([project_id], 1)
+            # 概念数
+            concepts = query_utils.get_nd_rel_ct([project_id], 0)
+            updateNum(projectId,triples,concepts)
         except Exception as e:
             print(e)
             updateStatus(project_id, 2)
@@ -144,18 +150,18 @@ def detail(request):
     project_id = data['project_id']
     print(project_id)
 
-    arr = [project_id]
-    # 三元组数
-    triples = query_utils.get_nd_rel_ct(arr, 1)
-    print(triples)
-    # 概念数
-    concepts = query_utils.get_nd_rel_ct(arr, 0)
-    print(concepts)
-    data['project_triples'] = triples
-    data['project_concepts'] = concepts
+    # arr = [project_id]
+    # # 三元组数
+    # triples = query_utils.get_nd_rel_ct(arr, 1)
+    # print(triples)
+    # # 概念数
+    # concepts = query_utils.get_nd_rel_ct(arr, 0)
+    # print(concepts)
+    # data['project_triples'] = triples
+    # data['project_concepts'] = concepts
     trees = query_utils.get_prj_kg(project_id)
     data['trees'] = trees
-    print(data)
+    # print(data)
 
     return JsonResponse({'result': 'success', 'data': data})
 
@@ -321,6 +327,12 @@ def copy(request):
         copy_utils.copy_prj(oldId,newId,path)
         # 修改项目状态
         updateStatus(newId, 3)
+        #  查询项目三元组数和概念数 编辑项目
+        # 三元组数
+        triples = query_utils.get_nd_rel_ct([newId], 1)
+        # 概念数
+        concepts = query_utils.get_nd_rel_ct([newId], 0)
+        updateNum(projectId, triples, concepts)
         return JsonResponse({'result': 'success'})
     except Exception as e:
         print(e)
@@ -393,3 +405,73 @@ def updateProjectConcepts(request):
         except Exception as e:
             error_logger.error(e)
             return JsonResponse({'result': 'failure'})
+
+
+#编辑项目三元组数&概念数
+def updateNum(projectId,triples:int,concepts:int):
+    # 获取参数
+    try:
+        # 校验项目名称 + 组织编码
+        id = projectId
+        triples = triples    # 项目三元组数
+        concepts = concepts  # 项目概念数
+        base_query = Project.objects
+        project = base_query.filter(project_id=id).first()
+        if not project:
+            return JsonResponse({'result': 'failure', 'message': '项目不存在'})
+        project.project_triples = triples
+        project.project_concepts = concepts
+        project.update_time = time_utils.now()
+        project.save()
+        return JsonResponse({'result': 'success'})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'result': 'failure'})
+
+# 项目列表
+def listV2(request):
+    # 获取参数
+    projectFieldcode = request.GET.get("project_fieldcode")
+    projectName = request.GET.get("project_name")
+    base_query = Project.objects.order_by('project_status',"-create_time")
+    if projectFieldcode is not None and projectName is not None:
+        base_query = base_query.filter(Q(project_name__icontains=projectName) &
+                          Q(project_fieldcode__icontains=projectFieldcode) & ~Q(project_status=0))
+    else:
+        base_query = base_query.filter(~Q(project_status=0))
+    total = base_query.count()
+    objs = [i.to_dict() for i in base_query.all()]
+    # 获取各个项目三元组数和概念数
+    # for obj in objs:
+    #     id = obj['project_id']
+    #     print(obj['project_id'])
+    #     arr = [str(id)]
+    #     # 三元组数
+    #     triples = query_utils.get_nd_rel_ct(arr, 1)
+    #     print(triples)
+    #     # 概念数
+    #     concepts = query_utils.get_nd_rel_ct(arr, 0)
+    #     print(concepts)
+    #     obj['project_triples'] = triples
+    #     obj['project_concepts'] = concepts
+
+    data = {
+        'result':'success',
+        'total': total,
+        'data': objs
+    }
+    return JsonResponse(data)
+
+
+
+# def listV2(request):
+#     # 项目数量
+#     projectId = "PJ99a2f03a614a11eb981cfa163eac98f2"
+#     # 三元组数
+#     triples = query_utils.get_nd_rel_ct([projectId], 1)
+#     # 概念数
+#     concepts = query_utils.get_nd_rel_ct([projectId], 0)
+#     updateNum(projectId, triples, concepts)
+#
+#     return JsonResponse({'result': 'success'})
+

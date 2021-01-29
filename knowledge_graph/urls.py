@@ -7,5 +7,6 @@ urlpatterns = [
     path('apl/login/', views.login),
     path('apl/chart/', views.chart),
     path('apl/statistics/', views.statistics),
+    path('apl/statisticsV2/', views.statisticsV2),
     path('apl/', include('project.urls')),
 ]
