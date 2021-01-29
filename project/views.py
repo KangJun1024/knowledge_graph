@@ -47,7 +47,7 @@ def upload(request):
             triples = query_utils.get_nd_rel_ct([project_id], 1)
             # 概念数
             concepts = query_utils.get_nd_rel_ct([project_id], 0)
-            updateNum(projectId,triples,concepts)
+            updateNum(project_id,triples,concepts)
             return JsonResponse({'result': 'success'})
         except Exception as e:
             print(e)
