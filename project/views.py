@@ -332,7 +332,7 @@ def copy(request):
         triples = query_utils.get_nd_rel_ct([newId], 1)
         # 概念数
         concepts = query_utils.get_nd_rel_ct([newId], 0)
-        updateNum(projectId, triples, concepts)
+        updateNum(newId, triples, concepts)
         return JsonResponse({'result': 'success'})
     except Exception as e:
         print(e)
