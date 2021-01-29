@@ -42,13 +42,13 @@ def upload(request):
             print("-----------结束任务------------")
             # 修改项目状态
             updateStatus(project_id,3)
-            return JsonResponse({'result': 'success'})
             #  查询项目三元组数和概念数 编辑项目
             # 三元组数
             triples = query_utils.get_nd_rel_ct([project_id], 1)
             # 概念数
             concepts = query_utils.get_nd_rel_ct([project_id], 0)
             updateNum(projectId,triples,concepts)
+            return JsonResponse({'result': 'success'})
         except Exception as e:
             print(e)
             updateStatus(project_id, 2)
