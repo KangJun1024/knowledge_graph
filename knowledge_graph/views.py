@@ -47,3 +47,19 @@ def chart(request):
 
     return JsonResponse({'result':'success','data':result})
 
+#项目统计数据20210129
+def statisticsV2(request):
+    #项目数量
+    projects = project.Project.objects.filter(~Q(project_status=0))
+    count = len(projects)
+    print(count)
+    #三元组数  获取项目对应三元组数
+    triples = 0
+    #概念数    获取项目对应概念数
+    concepts = 0
+    objs = [i.to_dict() for i in projects.all()]
+    for pro in objs:
+        triples += pro["project_triples"]
+        concepts += pro["project_concepts"]
+
+    return JsonResponse({'result':'success','projects':count,'triples':triples,'concepts':concepts})
