@@ -6,7 +6,7 @@ import os
 import re
 import time
 
-# graph = Graph("bolt://120.221.160.106:8002", username="neo4j", password="123456")
+#graph = Graph("bolt://120.221.160.106:8002", username="neo4j", password="123456")
 graph = Graph("bolt://127.0.0.1:8002", username="neo4j", password="123456")
 def load_csv(labels,head):
     """
@@ -234,9 +234,9 @@ def get_head_col(df):
     ori_col = []
     std_col = []
     for col in cols:
-        if "原始词" in col and col not in ori_col and len(re.findall(".\\d+", col)) == 0:
+        if "原始词" in col and col not in ori_col and len(re.findall("[.]+\\d+", col)) == 0:
             ori_col.append(col)
-        elif "标准词" in col and col not in std_col and len(re.findall(".\\d+", col)) == 0:
+        elif "标准词" in col and col not in std_col and len(re.findall("[.]+\\d+", col)) == 0:
             std_col.append(col)
     col_dict["原始词"] = ori_col
     col_dict["标准词"] = std_col
@@ -249,11 +249,11 @@ def get_localtime():
 
 if __name__ == "__main__":
     # try:
-    path = '/data/zhuwd/neo4j-community-3.5.12/import/P20002/KG_TEST.xlsx'
-    #path = 'D:/资料/数据治理/Neo4j知识图谱/KG_TEST.xlsx'
+    #path = '/data/zhuwd/neo4j-community-3.5.12/import/P20002/KG_TEST.xlsx'
+    path = 'D:/资料/数据治理/Neo4j知识图谱/观测操作名称.xlsx'
     print(get_localtime() + "-----------开始任务------------")
     head = excel_to_csv(path)
-    load_csv('P20002',head)
+    #load_csv('P20002',head)
     print(get_localtime() + "-----------结束任务------------")
 # except Exception as e:
 #     print(e)
