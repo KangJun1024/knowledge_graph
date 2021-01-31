@@ -273,14 +273,16 @@ def query_normalize_detail(prj_label,prj_name,area,name,node_id):
     return cards
 
 #获取节点路径api 20200107
-def query_path(arr,node_id,node_name,prj_label,temp_id):
-    arr.append(node_name)
-    path = "match (n:%s)-[r]->(m) where id(n)=%s and n.delete_flag = 0 and m.delete_flag = 0 return id(m),m.name" %(prj_label,node_id)
-    print(path)
-    result = graph.run(path).to_ndarray()
-    if result is not None and len(result) > 0 and str(temp_id) != result[0][0]:
-        #判断成环的情况
-        query_path(arr,result[0][0],result[0][1],prj_label,temp_id)
+def query_path(arr,node_id,node_name,prj_label,arr_id):
+    if not (node_id in arr_id):
+        arr.append(node_name)
+        arr_id.append(node_id)
+        path = "match (n:%s)-[r]->(m) where id(n)=%s and n.delete_flag = 0 and m.delete_flag = 0 return id(m),m.name limit 1" %(prj_label,node_id)
+        print(path)
+        result = graph.run(path).to_ndarray()
+        #if result is not None and len(result) > 0:
+        for res in result:    
+            query_path(arr,res[0],res[1],prj_label,arr_id)
 
 
 #通过节点id获取节点信息，选中功能
@@ -330,7 +332,8 @@ def select_node(node_id,prj_label):
             card["syn_vocab"].remove(res[2])
         #节点路径
         arr = []
-        query_path(arr,node_id,res[2],prj_label,node_id)
+        arr_id = []
+        query_path(arr,node_id,res[2],prj_label,arr_id)
         arr.reverse()
         card["path"] = arr
     return card
@@ -448,7 +451,8 @@ def select_node_name(name,prj_label):
             card["syn_vocab"].remove(name)
         # 节点路径
         arr = []
-        query_path(arr, res[0], name, prj_label,res[0])
+        arr_id = []
+        query_path(arr, res[0], name, prj_label,arr_id)
         arr.reverse()
         card["path"] = arr
         cards.append(copy.deepcopy(card))
