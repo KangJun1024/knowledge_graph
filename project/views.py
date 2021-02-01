@@ -401,6 +401,12 @@ def updateProjectConcepts(request):
                     elif ("del" == edit["edit_type"] and "rel" == edit["obj_type"]):
                         #关系删除
                         edit_utils.delete_rel(edit,projectId)
+            #  查询项目三元组数和概念数 编辑项目
+            # 三元组数
+            triples = query_utils.get_nd_rel_ct([projectId], 1)
+            # 概念数
+            concepts = query_utils.get_nd_rel_ct([projectId], 0)
+            updateNum(projectId, triples, concepts)
             return JsonResponse({'result': 'success'})
         except Exception as e:
             error_logger.error(e)
