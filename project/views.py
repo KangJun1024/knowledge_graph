@@ -15,7 +15,7 @@ access_logger = logging.getLogger('gunicorn')
 # 上传文件
 def upload(request):
     if request.method == 'POST':
-        try:
+        # try:
             # 获取项目名称
             project_id = request.POST.get("project_id")
             print(project_id)
@@ -36,6 +36,7 @@ def upload(request):
             path.close()
             # 解析文件&批量新增数据到neo4j
             print("-----------开始任务------------")
+            print(files[0].name)
             result = import_utils.excel_to_csv(os.path.join(LOG_DIR,files[0].name))
             print("-----------开始load csv------------")
             import_utils.load_csv(project_id,result)
@@ -49,7 +50,7 @@ def upload(request):
             concepts = query_utils.get_nd_rel_ct([project_id], 0)
             updateNum(project_id,triples,concepts)
             return JsonResponse({'result': 'success'})
-        except Exception as e:
+        # except Exception as e:
             print(e)
             updateStatus(project_id, 2)
             return JsonResponse({'result':'failure'})
