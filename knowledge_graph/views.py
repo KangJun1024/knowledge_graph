@@ -17,7 +17,30 @@ def login(request):
     if not user_obj:
         return JsonResponse({'result':'failure'})
     else:
-        return JsonResponse({'result':'success','data':username})
+        resp = JsonResponse({'result': 'success', 'data': username})
+        #登录成功之后
+        # 在向浏览器返回cookie的同时，也需要向后台表django_session中添加用户的登录状态session_data.
+        request.session['username'] = username
+        request.session["is_login"] = "1"
+        resp.set_cookie('username', username, max_age=1900000)
+        return resp
+
+
+def check_login(request):
+    # 获取cookie数据
+    username = request.COOKIES.get('username', '')
+    var1 = request.session.get("is_login", None)
+    var2 = request.session.get("username", None)
+    print(username,var1,var2)
+    if username == var2 and "1" == var1:
+        return JsonResponse({'result': 'success'})
+    else:
+        return JsonResponse({'result': 'failure'})
+# 注销函数
+def logout(request):
+    # 只删除session数据
+    request.session.flush()
+    return JsonResponse({'result': 'success'})
 
 def statistics(request):
     #项目数量

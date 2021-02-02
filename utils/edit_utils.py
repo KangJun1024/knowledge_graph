@@ -106,7 +106,7 @@ def creatRel(node,prj_label):
     # match 子节点
     sql_match_source = "match(m:%s) where m.uid='%s'" %(prj_label,sourceId)
     # 创建关系语句
-    sql_create_ref = "create (p)-[:%s]->(m)"%(relName)
+    sql_create_ref = "create (m)-[:%s]->(p)"%(relName)
     sql_create_ref = sql_match_target + " " + sql_match_source + " " + sql_create_ref
     print(sql_create_ref)
 
