@@ -51,7 +51,7 @@ def upload(request):
             updateNum(project_id,triples,concepts)
             return JsonResponse({'result': 'success'})
         except Exception as e:
-            print(e)
+            error_logger.error(e)
             updateStatus(project_id, 2)
             return JsonResponse({'result':'failure'})
 
@@ -85,6 +85,7 @@ def create(request:HttpRequest):
             project.save()
             return JsonResponse({'result': 'success','data':id})
         except Exception as e:
+            error_logger.error(e)
             return JsonResponse({'result': 'failure'})
 
 
@@ -201,6 +202,7 @@ def update(request):
             project.save()
             return JsonResponse({'result': 'success', 'data': id})
         except Exception as e:
+            error_logger.error(e)
             return JsonResponse({'result': 'failure'})
 
 
@@ -272,7 +274,7 @@ def queryConcept(request):
         total = len(trees)
         return JsonResponse({'result':'success','data':trees,'total':total})
     except Exception as e:
-        print(e)
+        error_logger.error(e)
         return JsonResponse({'result':'failure'})
 
 # 应用归一查询 概念详情
@@ -288,7 +290,7 @@ def queryConceptInfo(request):
         tree = query_utils.query_normalize_detail(projectId,projectName,projectFieldcode,conceptName,nodeId)
         return JsonResponse({'result': 'success','data':tree})
     except Exception as e:
-        print(e)
+        error_logger.error(e)
         return JsonResponse({'result':'failure'})
 
 # 项目选中图谱数据
@@ -301,7 +303,7 @@ def queryProjectConceptInfo(request):
         data = query_utils.select_node(nodeId,projectId)
         return JsonResponse({'result': 'success','data':data})
     except Exception as e:
-        print(e)
+        error_logger.error(e)
         return JsonResponse({'result':'failure'})
 
 # 项目聚焦图谱数据聚焦
@@ -314,7 +316,7 @@ def focusProjectConceptInfo(request):
         data = query_utils.focus_node(nodeId,projectId)
         return JsonResponse({'result': 'success','data':data})
     except Exception as e:
-        print(e)
+        error_logger.error(e)
         return JsonResponse({'result':'failure'})
 
 # 复制项目图谱数据
@@ -336,7 +338,7 @@ def copy(request):
         updateNum(newId, triples, concepts)
         return JsonResponse({'result': 'success'})
     except Exception as e:
-        print(e)
+        error_logger.error(e)
         updateStatus(newId, 2)
         return JsonResponse({'result':'failure'})
 
@@ -350,7 +352,7 @@ def selectProjectConceptInfo(request):
         tree = query_utils.query_node(conceptName,projectId)
         return JsonResponse({'result': 'success','data':tree})
     except Exception as e:
-        print(e)
+        error_logger.error(e)
         return JsonResponse({'result':'failure'})
 
 #  通过项目名称获取项目并修改项目图谱地址
@@ -373,7 +375,7 @@ def updatePhoto(request):
             project.save()
             return JsonResponse({'result': 'success'})
         except Exception as e:
-            print(e)
+            error_logger.error(e)
             return JsonResponse({'result': 'failure'})
 
 # 项目图谱编辑20200121
@@ -432,7 +434,7 @@ def updateNum(projectId,triples:int,concepts:int):
         project.save()
         return JsonResponse({'result': 'success'})
     except Exception as e:
-        print(e)
+        error_logger.error(e)
         return JsonResponse({'result': 'failure'})
 
 # 项目列表
