@@ -5,6 +5,7 @@ import pandas as pd
 
 # graph = Graph("bolt://120.221.160.106:8002", username="neo4j", password="123456")
 graph = Graph("bolt://127.0.0.1:8002", username="neo4j", password="123456")
+# graph = Graph("bolt://127.0.0.1:7687", username="neo4j", password="neo4j1")
 
 #删除关系
 def delete_rel(node,prj_label):

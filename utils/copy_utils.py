@@ -6,6 +6,7 @@ import os
 
 # graph = Graph("bolt://120.221.160.106:8002", username="neo4j", password="123456")
 graph = Graph("bolt://127.0.0.1:8002", username="neo4j", password="123456")
+# graph = Graph("bolt://127.0.0.1:7687", username="neo4j", password="neo4j1")
 
 #复制项目
 def copy_prj(prj_old,prj_new,import_dir):

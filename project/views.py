@@ -18,7 +18,7 @@ def upload(request):
         try:
             # 获取项目名称
             project_id = request.POST.get("project_id")
-            print(project_id)
+            access_logger.info("上传图谱项目ID",project_id)
             # 获取文件上传到服务器
             print("-----------开始任务2------------")
             files = request.FILES.getlist('file',None)
