@@ -18,12 +18,11 @@ def upload(request):
         try:
             # 获取项目名称
             project_id = request.POST.get("project_id")
-            access_logger.info("上传图谱项目ID",project_id)
+            access_logger.info("上传图谱项目ID")
+            access_logger.info(project_id)
             # 获取文件上传到服务器
             print("-----------开始任务2------------")
             files = request.FILES.getlist('file',None)
-            if not files:
-                return JsonResponse({'result':'failure'})
             # 生成项目上传文件夹
             print("-----------开始任务3------------")
             LOG_DIR = os.path.join(settings.IMPORT_DIR, project_id)
