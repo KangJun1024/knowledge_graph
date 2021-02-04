@@ -194,7 +194,6 @@ def update(request):
             project.project_fieldcode = payload['project_fieldcode']
             project.project_fieldname = payload['project_fieldname']
             project.update_user = payload['update_user']
-            project.project_id = id
             project.project_concepts = 0
             project.project_triples = 0
             project.update_time = time_utils.now()
