@@ -581,24 +581,24 @@ def updateV2(request):
             # 0.2 生成项目图谱
             # 解析文件&批量新增数据到neo4j
             print("-----------开始任务------------")
-            LOG_DIR = os.path.join(settings.IMPORT_DIR, id)
+            LOG_DIR = os.path.join(settings.IMPORT_DIR, project_id)
             print(LOG_DIR)
             result = import_utils.excel_to_csv(os.path.join(LOG_DIR, file_name))
             print("-----------开始load csv------------")
-            import_utils.load_csv(id, result)
+            import_utils.load_csv(project_id, result)
             print("-----------结束任务------------")
             # 修改项目状态
-            updateStatus(id, 3)
+            updateStatus(project_id, 3)
             #  查询项目三元组数和概念数 编辑项目
             # 三元组数
-            triples = query_utils.get_nd_rel_ct([id], 1)
+            triples = query_utils.get_nd_rel_ct([project_id], 1)
             # 概念数
-            concepts = query_utils.get_nd_rel_ct([id], 0)
-            updateNum(id, triples, concepts)
-            return JsonResponse({'result': 'success', 'data': id})
+            concepts = query_utils.get_nd_rel_ct([project_id], 0)
+            updateNum(project_id, triples, concepts)
+            return JsonResponse({'result': 'success', 'data': project_id})
         except Exception as e:
             error_logger.error(e)
-            updateStatus(id, 2)
+            updateStatus(project_id, 2)
             return JsonResponse({'result': 'failure'})
 
 
