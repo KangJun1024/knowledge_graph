@@ -543,7 +543,63 @@ def createV2(request:HttpRequest):
             updateStatus(id, 2)
             return JsonResponse({'result': 'failure'})
 
-
+# 项目删除
+def updateV2(request):
+    # 获取参数
+    print(request.body)
+    if request.method == 'POST':
+        try:
+            payload = simplejson.loads(request.body)
+            access_logger.info(payload)
+            # 校验项目名称 + 组织编码
+            id = payload['id']
+            project_id = payload['project_id']
+            file_name = payload['file_name']
+            base_query = Project.objects
+            project = base_query.filter(id=id).first()
+            if not project:
+                return JsonResponse({'result': 'failure', 'message': '项目不存在'})
+            name = payload['project_name']
+            code = payload['project_code']
+            # 判断是否有名称 组织编码修改
+            if name != project.project_name or code != project.project_code:
+                if Project.objects.filter(Q(project_name__icontains=name) & Q(project_code__icontains=code) & ~Q(project_status=0)).exists():
+                    return JsonResponse({'result': 'failure', 'message': '项目名称重复'})
+            project.project_name = payload['project_name']
+            project.project_code = payload['project_code']
+            project.project_status = 1
+            project.project_introduction = payload['project_introduction']
+            project.project_photo = payload['project_photo']
+            project.project_fieldcode = payload['project_fieldcode']
+            project.project_fieldname = payload['project_fieldname']
+            project.update_user = payload['update_user']
+            project.project_concepts = 0
+            project.project_triples = 0
+            project.project_id = project_id
+            project.update_time = time_utils.now()
+            project.save()
+            # 0.2 生成项目图谱
+            # 解析文件&批量新增数据到neo4j
+            print("-----------开始任务------------")
+            LOG_DIR = os.path.join(settings.IMPORT_DIR, id)
+            print(LOG_DIR)
+            result = import_utils.excel_to_csv(os.path.join(LOG_DIR, file_name))
+            print("-----------开始load csv------------")
+            import_utils.load_csv(id, result)
+            print("-----------结束任务------------")
+            # 修改项目状态
+            updateStatus(id, 3)
+            #  查询项目三元组数和概念数 编辑项目
+            # 三元组数
+            triples = query_utils.get_nd_rel_ct([id], 1)
+            # 概念数
+            concepts = query_utils.get_nd_rel_ct([id], 0)
+            updateNum(id, triples, concepts)
+            return JsonResponse({'result': 'success', 'data': id})
+        except Exception as e:
+            error_logger.error(e)
+            updateStatus(id, 2)
+            return JsonResponse({'result': 'failure'})
 
 
 
