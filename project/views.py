@@ -469,6 +469,87 @@ def listV2(request):
     }
     return JsonResponse(data)
 
+# 上传文件 20210222
+def uploadV2(request):
+    if request.method == 'POST':
+        try:
+            # 获取项目名称 项目id自动生成返回
+            project_id = id = common_utils.generate_record_id('PJ')
+            # 获取文件上传到服务器
+            files = request.FILES.getlist('file',None)
+            # 生成项目上传文件夹
+            LOG_DIR = os.path.join(settings.IMPORT_DIR, project_id)
+            print(LOG_DIR)
+            if not os.path.exists(LOG_DIR):
+                os.makedirs(LOG_DIR)
+            path = open(os.path.join(LOG_DIR,files[0].name), 'wb+') # 项目目录下
+            for chunk in files[0].chunks():
+                path.write(chunk)
+            path.close()
+            return JsonResponse({'result': 'success','project_id':project_id,'file_name':files[0].name})
+        except Exception as e:
+            error_logger.error(e)
+            return JsonResponse({'result':'failure'})
+
+# 项目新增
+def createV2(request:HttpRequest):
+    print(request.body)
+    if request.method == 'POST':
+        try:
+            # 0.1 创建项目
+            payload = simplejson.loads(request.body)
+            access_logger.info(payload)
+            # 校验项目名称 + 组织编码
+            name = payload['project_name']
+            code = payload['project_code']
+            id = payload['project_id']
+            file_name = payload['file_name']
+            project = Project()
+            project.project_name = payload['project_name']
+            project.project_code = payload['project_code']
+            project.project_status = 1
+            project.project_introduction = payload['project_introduction']
+            project.project_photo = payload['project_photo']
+            project.project_fieldcode = payload['project_fieldcode']
+            project.project_fieldname = payload['project_fieldname']
+            project.create_user = payload['create_user']
+            project.project_id = id
+            project.project_concepts = 0
+            project.project_triples = 0
+            project.create_time = time_utils.now()
+            if Project.objects.filter(Q(project_name__icontains=name) & Q(project_code__icontains=code) & ~Q(project_status=0)).exists():
+                return JsonResponse({'result': 'failure','message':'同组织下已有同名项目，请重新填写'})
+            project.save()
+            # 0.2 生成项目图谱
+            # 解析文件&批量新增数据到neo4j
+            print("-----------开始任务------------")
+            LOG_DIR = os.path.join(settings.IMPORT_DIR, id)
+            print(LOG_DIR)
+            result = import_utils.excel_to_csv(os.path.join(LOG_DIR, file_name))
+            print("-----------开始load csv------------")
+            import_utils.load_csv(id, result)
+            print("-----------结束任务------------")
+            # 修改项目状态
+            updateStatus(project_id, 3)
+            #  查询项目三元组数和概念数 编辑项目
+            # 三元组数
+            triples = query_utils.get_nd_rel_ct([project_id], 1)
+            # 概念数
+            concepts = query_utils.get_nd_rel_ct([project_id], 0)
+            updateNum(project_id, triples, concepts)
+            return JsonResponse({'result': 'success','data':id})
+        except Exception as e:
+            error_logger.error(e)
+            updateStatus(project_id, 2)
+            return JsonResponse({'result': 'failure'})
+
+
+
+
+
+
+
+
 
 
 # def listV2(request):
