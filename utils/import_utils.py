@@ -5,6 +5,11 @@ import pandas as pd
 import os
 import re
 import time
+import logging
+
+# 日志
+error_logger = logging.getLogger('error')
+access_logger = logging.getLogger('gunicorn')
 
 # graph = Graph("bolt://120.221.160.106:8002", username="neo4j", password="123456")
 graph = Graph("bolt://127.0.0.1:8002", username="neo4j", password="123456")
@@ -15,6 +20,7 @@ def load_csv(labels,head):
     head：原始词、标准词标题头
     """
     print(get_localtime() + "开始上传数据！")
+    access_logger.info(get_localtime() + "开始上传数据！")
     # 创建ori_vocab节点
     ori_head = head["原始词"]
     ori_pro = ",".join('%s:line[%s]' % (re.findall("[[](.*?)[]]", ori_head[i])[0], i + 1) for i in range(len(ori_head)))
@@ -22,8 +28,10 @@ def load_csv(labels,head):
     ori_cypher = 'USING PERIODIC COMMIT 5000 LOAD CSV FROM "%s" AS line create (m:%s{uid:line[0],%s,delete_flag:0})' % (
     "file:///" + labels + "/ori_vocab.csv", ori_label, ori_pro)
     print(ori_cypher)
+    access_logger.info(ori_cypher)
     graph.run(ori_cypher)
     print(get_localtime() + "创建原始词完成！")
+    access_logger.info(get_localtime() + "创建原始词完成！")
     # 创建std_vocab节点
     std_head = head["标准词"]
     std_pro = ",".join('%s:line[%s]' % (re.findall("[[](.*?)[]]", std_head[i])[0], i + 1) for i in range(len(std_head)))
@@ -31,33 +39,44 @@ def load_csv(labels,head):
     std_cypher = 'USING PERIODIC COMMIT 5000 LOAD CSV FROM "%s" AS line create (n:%s{uid:line[0],%s,delete_flag:0})' % (
     "file:///" + labels + "/std_vocab.csv", std_label, std_pro)
     print(std_cypher)
+    access_logger.info(std_cypher)
     graph.run(std_cypher)
     print(get_localtime() + "创建标准词完成！")
+    access_logger.info(get_localtime() + "创建标准词完成！")
     # 为所有节点创建 :labels(uid) 唯一约束
     cons_uid = 'CREATE CONSTRAINT ON (n:%s) ASSERT n.uid IS UNIQUE' % (labels)
     print(cons_uid)
+    access_logger.info(cons_uid)
     graph.run(cons_uid)
     print(get_localtime() + "创建唯一约束完成！")
+    access_logger.info(get_localtime() + "创建唯一约束完成！")
     # 为所有节点创建 :labels(name) 索引
     index_name = 'create index on :%s(name)' % (labels)
     print(index_name)
+    access_logger.info(index_name)
     graph.run(index_name)
     index_delete = 'create index on :%s(delete_flag)' % (labels)
     print(index_delete)
+    access_logger.info(index_delete)
     graph.run(index_delete)
     print(get_localtime() + "创建索引完成！")
+    access_logger.info(get_localtime() + "创建索引完成！")
     # 创建is_rel关系
     is_cypher = 'USING PERIODIC COMMIT 5000 LOAD CSV FROM "%s" AS line match (m:%s{uid:line[0]}),(n:%s{uid:line[1]}) create (m)-[r:is]->(n)' % (
     "file:///" + labels + "/is_rel.csv", labels, labels)
     print(is_cypher)
+    access_logger.info(is_cypher)
     graph.run(is_cypher)
     print(get_localtime() + "创建归一关系完成！")
+    access_logger.info(get_localtime() + "创建归一关系完成！")
     # 创建belong_rel关系
     belong_cypher = 'USING PERIODIC COMMIT 5000 LOAD CSV FROM "%s" AS line match (m:%s{uid:line[0]}),(n:%s{uid:line[1]})  create (m)-[r:belong_to]->(n)' % (
     "file:///" + labels + "/belong_to_rel.csv", labels, labels)
     print(belong_cypher)
+    access_logger.info(belong_cypher)
     graph.run(belong_cypher)
     print(get_localtime() + "创建分类关系完成！")
+    access_logger.info(get_localtime() + "创建分类关系完成！")
     # 更新相对路径(多路径问题未解决？)
     # path_cypher = 'match(n)-[r]->(m) set n.out_node=id(m),m.in_node=id(n)'
     # graph.run(path_cypher)
@@ -89,7 +108,9 @@ def excel_to_csv(excel_path):
     is_rel.to_csv(os.path.join(dir, "is_rel.csv"), header=None, index=None)
     belong_rel.to_csv(os.path.join(dir, "belong_to_rel.csv"), header=None, index=None)
     print(os.path.join(dir, "ori_vocab.csv"))
+    access_logger.info(os.path.join(dir, "ori_vocab.csv"))
     print("已输出到csv!")
+    access_logger.info("已输出到csv!")
     return head
 
 
