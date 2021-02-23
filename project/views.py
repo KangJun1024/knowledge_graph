@@ -57,7 +57,6 @@ def upload(request):
 
 # 项目新增
 def create(request:HttpRequest):
-    print(request.body)
     if request.method == 'POST':
         try:
             payload = simplejson.loads(request.body)

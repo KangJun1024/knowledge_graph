@@ -6,11 +6,15 @@ from utils import time_utils,query_utils
 import logging
 import simplejson
 from django.db.models import Q
-logger = logging.getLogger(__name__)
+
+# 日志
+error_logger = logging.getLogger('error')
+access_logger = logging.getLogger('gunicorn')
 
 
 def login(request):
     payload = simplejson.loads(request.body)
+    access_logger.info(payload)
     username = payload['username']
     password = payload['password']
     user_obj = models.UserInfo.objects.filter(username=username, password=password).first()
